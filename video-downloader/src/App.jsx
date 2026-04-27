@@ -1,11 +1,13 @@
 import { useState, useCallback, useRef } from 'react'
 import './App.css'
+import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Download, Search, Clipboard, X, CheckCheck, 
   Save, Film, User, AlertCircle, Loader2, ArrowRight
 } from 'lucide-react'
 
-// Import platform icons
+// Import logo and platform icons
+import logo from './assets/logo.png'
 import youtubeIcon from './assets/youtube.png'
 import facebookIcon from './assets/facebook.png'
 import instagramIcon from './assets/instagram.png'
@@ -201,21 +203,54 @@ export default function App() {
       <div className="container">
 
         {/* ── Header ── */}
-        <header className="header">
-          <div className="logo">
-            <span className="logo-icon"><Download size={32} /></span>
+        <motion.header 
+          className="header"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div 
+            className="logo"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <motion.img 
+              src={logo} 
+              alt="VidGrab Logo" 
+              className="logo-image"
+              initial={{ rotate: -10, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              transition={{ duration: 0.8, type: "spring" }}
+            />
             <span className="logo-text">VidGrab</span>
-          </div>
-          <p className="tagline">Download videos from any platform, instantly</p>
-        </header>
+          </motion.div>
+          <motion.p 
+            className="tagline"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+          >
+            Download videos from any platform, instantly
+          </motion.p>
+        </motion.header>
 
         {/* ── Platform strip ── */}
-        <div className="platforms-strip">
-          {PLATFORMS.map(p => (
-            <span
+        <motion.div 
+          className="platforms-strip"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          {PLATFORMS.map((p, index) => (
+            <motion.span
               key={p.name}
               className={`platform-badge ${detectedPlatform?.name === p.name ? 'active' : ''}`}
               style={{ '--p-color': p.color }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 + index * 0.05, duration: 0.3 }}
+              whileHover={{ scale: 1.1, y: -2 }}
+              whileTap={{ scale: 0.95 }}
             >
               <span className="platform-icon">
                 {typeof p.icon === 'string' ? (
@@ -225,12 +260,17 @@ export default function App() {
                 )}
               </span>
               <span className="platform-name">{p.name}</span>
-            </span>
+            </motion.span>
           ))}
-        </div>
+        </motion.div>
 
         {/* ── Main card ── */}
-        <div className="card">
+        <motion.div 
+          className="card"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.6 }}
+        >
 
           {/* URL input */}
           <div className="input-section">
@@ -267,36 +307,68 @@ export default function App() {
                 </button>
               )}
             </div>
-            {status === 'error' && (
-              <div className="error-msg" role="alert">
-                <AlertCircle size={18} /> {errorMsg}
-              </div>
-            )}
+            <AnimatePresence mode="wait">
+              {status === 'error' && (
+                <motion.div 
+                  className="error-msg" 
+                  role="alert"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <AlertCircle size={18} /> {errorMsg}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Analyze button */}
-          {(status === 'idle' || status === 'error') && (
-            <button
-              className="analyze-btn"
-              onClick={handleAnalyze}
-              disabled={!url.trim()}
-            >
-              <span className="btn-icon"><Search size={20} /></span>
-              Analyze Video
-            </button>
-          )}
+          <AnimatePresence mode="wait">
+            {(status === 'idle' || status === 'error') && (
+              <motion.button
+                className="analyze-btn"
+                onClick={handleAnalyze}
+                disabled={!url.trim()}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+              >
+                <span className="btn-icon"><Search size={20} /></span>
+                Analyze Video
+              </motion.button>
+            )}
+          </AnimatePresence>
 
           {/* Analyzing spinner */}
-          {status === 'analyzing' && (
-            <div className="analyzing-state">
-              <Loader2 className="spinner" size={32} />
-              <span>Fetching video info…</span>
-            </div>
-          )}
+          <AnimatePresence mode="wait">
+            {status === 'analyzing' && (
+              <motion.div 
+                className="analyzing-state"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Loader2 className="spinner" size={32} />
+                <span>Fetching video info…</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Video info */}
-          {(status === 'ready' || status === 'done') && videoInfo && (
-            <div className={`video-info ${status === 'done' ? 'done' : ''}`}>
+          <AnimatePresence mode="wait">
+            {(status === 'ready' || status === 'done') && videoInfo && (
+              <motion.div 
+                className={`video-info ${status === 'done' ? 'done' : ''}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+              >
               <div className="video-thumb-wrap">
                 {videoInfo.thumbnail
                   ? <img src={videoInfo.thumbnail} alt="thumbnail" className="video-thumb" />
@@ -353,21 +425,31 @@ export default function App() {
                     </button>
                   </div>
                 ) : (
-                  <button
+                  <motion.button
                     className="download-btn"
                     onClick={handleDownload}
                     disabled={!selectedFmt}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     <span className="btn-icon"><Download size={20} /></span> Download Now
-                  </button>
+                  </motion.button>
                 )}
               </div>
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Progress bar */}
-          {status === 'downloading' && (
-            <div className="download-progress">
+          <AnimatePresence mode="wait">
+            {status === 'downloading' && (
+              <motion.div 
+                className="download-progress"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
               <div className="progress-info">
                 <span>
                   Downloading…
@@ -381,48 +463,106 @@ export default function App() {
                 <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
               </div>
               <p className="progress-sub">{videoInfo?.title}</p>
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        </div>
+        </motion.div>
 
         {/* ── How it works ── */}
-        <div className="how-it-works">
+        <motion.div 
+          className="how-it-works"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
           <h2>How it works</h2>
           <div className="steps">
-            <div className="step">
+            <motion.div 
+              className="step"
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              whileHover={{ scale: 1.05, y: -5 }}
+            >
               <div className="step-num">1</div>
               <div className="step-text">
                 <strong>Copy the URL</strong>
                 <span>Go to any supported platform and copy the video link</span>
               </div>
-            </div>
-            <div className="step-arrow"><ArrowRight size={24} /></div>
-            <div className="step">
+            </motion.div>
+            <motion.div 
+              className="step-arrow"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+            >
+              <ArrowRight size={24} />
+            </motion.div>
+            <motion.div 
+              className="step"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              whileHover={{ scale: 1.05, y: -5 }}
+            >
               <div className="step-num">2</div>
               <div className="step-text">
                 <strong>Paste & Analyze</strong>
                 <span>Paste the URL above and click Analyze</span>
               </div>
-            </div>
-            <div className="step-arrow"><ArrowRight size={24} /></div>
-            <div className="step">
+            </motion.div>
+            <motion.div 
+              className="step-arrow"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+            >
+              <ArrowRight size={24} />
+            </motion.div>
+            <motion.div 
+              className="step"
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              whileHover={{ scale: 1.05, y: -5 }}
+            >
               <div className="step-num">3</div>
               <div className="step-text">
                 <strong>Download</strong>
                 <span>Choose quality and hit Download Now</span>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── History ── */}
-        {history.length > 0 && (
-          <div className="history-section">
-            <h2>Recent Downloads</h2>
-            <div className="history-list">
-              {history.map(item => (
-                <div key={item.id} className="history-item">
+        <AnimatePresence>
+          {history.length > 0 && (
+            <motion.div 
+              className="history-section"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h2>Recent Downloads</h2>
+              <div className="history-list">
+                {history.map((item, index) => (
+                  <motion.div 
+                    key={item.id} 
+                    className="history-item"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                    whileHover={{ x: 8, scale: 1.02 }}
+                  >
                   <span
                     className="history-platform"
                     style={{ background: item.color }}
@@ -446,11 +586,12 @@ export default function App() {
                   >
                     <Save size={18} />
                   </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <footer className="footer">
           <p>VidGrab — Download responsibly. Respect copyright and platform terms of service.</p>
