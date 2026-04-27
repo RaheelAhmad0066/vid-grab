@@ -1,47 +1,37 @@
+/* ===== CSS Variables — Dark Theme Only ===== */
 :root {
-  --bg: #f5f3ff;
-  --text: #1e1b2e;
-  --text-muted: #6b7280;
-  --text-placeholder: #9ca3af;
-  --card-bg: rgba(255,255,255,0.88);
-  --card-border: rgba(124,58,237,0.12);
-  --card-shadow: 0 4px 28px rgba(124,58,237,0.09),0 1px 4px rgba(0,0,0,0.04);
-  --card-shadow-hover: 0 10px 44px rgba(124,58,237,0.16),0 2px 8px rgba(0,0,0,0.06);
-  --input-bg: #fff;
-  --input-border: #e5e7eb;
-  --badge-bg: rgba(124,58,237,0.07);
-  --badge-border: rgba(124,58,237,0.16);
-  --info-bg: rgba(124,58,237,0.04);
-  font-family: system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --bg: #0a0a0f;
+  --bg2: #0f0e1a;
+  --text: #f1f0f7;
+  --text-muted: #8b8fa8;
+  --text-dim: #555870;
+  --text-placeholder: #555870;
+  --card-bg: rgba(255,255,255,0.04);
+  --card-border: rgba(139,92,246,0.2);
+  --card-glow: rgba(139,92,246,0.08);
+  --card-shadow: 0 4px 32px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.3);
+  --card-shadow-hover: 0 12px 48px rgba(139,92,246,0.25), 0 2px 8px rgba(0,0,0,0.4);
+  --input-bg: rgba(255,255,255,0.06);
+  --input-border: rgba(255,255,255,0.1);
+  --info-bg: rgba(139,92,246,0.06);
+  --purple: #8b5cf6;
+  --pink: #ec4899;
+  --green: #22c55e;
+  --badge-bg: rgba(139,92,246,0.1);
+  --badge-border: rgba(139,92,246,0.25);
+
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-size: 16px;
   line-height: 1.5;
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
-  color-scheme: light dark;
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0c0b14;
-    --text: #f1f0f7;
-    --text-muted: #9ca3af;
-    --text-placeholder: #6b7280;
-    --card-bg: rgba(255,255,255,0.04);
-    --card-border: rgba(124,58,237,0.22);
-    --card-shadow: 0 4px 28px rgba(0,0,0,0.45),0 1px 4px rgba(0,0,0,0.2);
-    --card-shadow-hover: 0 10px 44px rgba(124,58,237,0.28),0 2px 8px rgba(0,0,0,0.3);
-    --input-bg: rgba(255,255,255,0.06);
-    --input-border: rgba(255,255,255,0.1);
-    --badge-bg: rgba(124,58,237,0.13);
-    --badge-border: rgba(124,58,237,0.28);
-    --info-bg: rgba(124,58,237,0.09);
-  }
-}
-
-*,*::before,*::after { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); }
 #root { min-height: 100vh; }
 button { font-family: inherit; }
-input { font-family: inherit; }
-h1,h2,h3 { font-weight: 700; line-height: 1.2; }
+input  { font-family: inherit; }
+h1, h2, h3 { font-weight: 700; line-height: 1.2; }
