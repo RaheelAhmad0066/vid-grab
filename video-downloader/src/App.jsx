@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
+import React from 'react'
 import './App.css'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast, { Toaster } from 'react-hot-toast'
 import { 
   Download, Search, Clipboard, X, CheckCheck, 
   Save, Film, User, AlertCircle, Loader2, ArrowRight,
-  Share2, Trash2, History, Copy
+  Share2, Trash2, History, Copy, Play
 } from 'lucide-react'
 
 // Store & Hooks
@@ -18,6 +19,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { TopBar } from './components/TopBar'
 import { PlatformBadges } from './components/PlatformBadges'
 import { SettingsPanel } from './components/SettingsPanel'
+import { VideoPreviewModal } from './components/VideoPreviewModal'
 
 // Utils
 import { detectPlatform } from './utils/platform'
@@ -44,13 +46,23 @@ export default function App() {
     clearHistory,
     loadHistory,
     loadTheme,
+    toggleSettings,
   } = useAppStore()
 
   // Custom Hooks
   const { analyzeVideo, downloadVideo, saveFile, resetDownload } = useVideoDownload()
   const { pasteHint, pasteFromClipboard, copyToClipboard, shareContent } = useClipboard()
 
+  const [showPreview, setShowPreview] = React.useState(false)
   const detectedPlatform = detectPlatform(url)
+  
+  // Debug: Log detected platform
+  React.useEffect(() => {
+    if (url) {
+      console.log('URL:', url)
+      console.log('Detected Platform:', detectedPlatform)
+    }
+  }, [url, detectedPlatform])
 
   // Load saved data
   useEffect(() => {
@@ -100,7 +112,15 @@ export default function App() {
 
       <TopBar />
       
-      <SettingsPanel />
+      <SettingsPanel onSaveFile={saveFile} />
+      
+      <VideoPreviewModal 
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        videoInfo={videoInfo}
+        url={url}
+        platform={platform}
+      />
 
       <div className="container">
         {/* Header */}
@@ -248,10 +268,45 @@ export default function App() {
                 transition={{ duration: 0.4 }}
               >
                 <div className="video-thumb-wrap">
-                  {videoInfo.thumbnail
-                    ? <img src={videoInfo.thumbnail} alt="thumbnail" className="video-thumb" />
-                    : <div className="thumb-placeholder"><Film size={48} /></div>
-                  }
+                  {videoInfo.thumbnail ? (
+                    <>
+                      <img 
+                        src={videoInfo.thumbnail} 
+                        alt="thumbnail" 
+                        className="video-thumb"
+                        loading="lazy"
+                        onError={(e) => {
+                          console.error('Thumbnail failed to load:', videoInfo.thumbnail)
+                          e.target.style.display = 'none'
+                          const placeholder = e.target.parentElement.querySelector('.thumb-placeholder')
+                          if (placeholder) placeholder.style.display = 'flex'
+                        }}
+                      />
+                      <div className="thumb-placeholder" style={{ display: 'none' }}>
+                        <Film size={48} />
+                      </div>
+                      {/* Preview Overlay */}
+                      <motion.div 
+                        className="thumb-preview-overlay"
+                        onClick={() => setShowPreview(true)}
+                        whileHover={{ opacity: 1 }}
+                        initial={{ opacity: 0 }}
+                      >
+                        <motion.div
+                          className="thumb-play-btn"
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          <Play size={32} fill="white" />
+                        </motion.div>
+                        <span className="preview-text">Preview</span>
+                      </motion.div>
+                    </>
+                  ) : (
+                    <div className="thumb-placeholder">
+                      <Film size={48} />
+                    </div>
+                  )}
                   <span className="video-duration">{videoInfo.duration}</span>
                   {platform && (
                     <span className="video-platform-tag" style={{ background: platform.color }}>
@@ -283,17 +338,19 @@ export default function App() {
 
                   {status === DOWNLOAD_STATUS.READY && (
                     <div className="format-select-wrap">
-                      <label className="quality-label">Quality:</label>
+                      <label className="quality-label">Select Quality:</label>
                       <div className="quality-options">
                         {videoInfo.formats?.map(fmt => (
-                          <button
+                          <motion.button
                             key={fmt.format_id}
                             className={`quality-btn ${selectedFormat?.format_id === fmt.format_id ? 'selected' : ''}`}
                             onClick={() => setSelectedFormat(fmt)}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                           >
                             {fmt.label}
                             {fmt.filesize && <span className="fmt-size"> · {fmt.filesize}</span>}
-                          </button>
+                          </motion.button>
                         ))}
                       </div>
                     </div>
@@ -439,17 +496,19 @@ export default function App() {
             >
               <div className="history-header">
                 <h2><History size={24} /> Recent Downloads</h2>
-                <motion.button
-                  className="clear-history-btn"
-                  onClick={handleClearHistory}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Trash2 size={16} /> Clear All
-                </motion.button>
+                {history.length > 3 && (
+                  <motion.button
+                    className="view-all-btn"
+                    onClick={toggleSettings}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    View All ({history.length})
+                  </motion.button>
+                )}
               </div>
               <div className="history-list">
-                {history.map((item, index) => (
+                {history.slice(0, 3).map((item, index) => (
                   <motion.div 
                     key={item.id} 
                     className="history-item"
@@ -480,13 +539,6 @@ export default function App() {
                       title="Save file"
                     >
                       <Save size={18} />
-                    </button>
-                    <button
-                      className="history-delete-btn"
-                      onClick={() => handleDeleteHistory(item.id)}
-                      title="Remove from history"
-                    >
-                      <Trash2 size={16} />
                     </button>
                   </motion.div>
                 ))}

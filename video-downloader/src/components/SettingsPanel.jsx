@@ -1,10 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Download, Trash2, Info } from 'lucide-react'
+import { X, Trash2, Info, History as HistoryIcon, Save } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
-import { API_BASE_URL } from '../constants/platforms'
 
-export const SettingsPanel = () => {
-  const { showSettings, toggleSettings, clearHistory } = useAppStore()
+export const SettingsPanel = ({ onSaveFile }) => {
+  const { showSettings, toggleSettings, clearHistory, history, removeFromHistory } = useAppStore()
 
   return (
     <AnimatePresence>
@@ -16,6 +15,7 @@ export const SettingsPanel = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={toggleSettings}
           />
 
@@ -25,7 +25,11 @@ export const SettingsPanel = () => {
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            transition={{ 
+              type: 'tween',
+              duration: 0.25,
+              ease: [0.25, 0.1, 0.25, 1]
+            }}
           >
             <div className="settings-header">
               <h2>Settings</h2>
@@ -35,62 +39,84 @@ export const SettingsPanel = () => {
             </div>
 
             <div className="settings-content">
-              {/* API Settings */}
-              <div className="settings-section">
-                <h3><Info size={20} /> API Configuration</h3>
-                <div className="setting-item">
-                  <label>Backend URL</label>
-                  <input 
-                    type="text" 
-                    value={API_BASE_URL} 
-                    readOnly 
-                    className="setting-input"
-                  />
-                  <p className="setting-description">
-                    Current backend endpoint. Update in constants/platforms.js
-                  </p>
+              {/* Download History - Only show if history exists */}
+              {history.length > 0 && (
+                <div className="settings-section">
+                  <div className="section-header">
+                    <h3><HistoryIcon size={20} /> Download History ({history.length})</h3>
+                    <button 
+                      className="clear-all-btn"
+                      onClick={() => {
+                        if (window.confirm('Clear all download history?')) {
+                          clearHistory()
+                        }
+                      }}
+                    >
+                      <Trash2 size={14} /> Clear All
+                    </button>
+                  </div>
+                  <div className="history-list-settings">
+                    {history.map((item) => (
+                      <div key={item.id} className="history-item-settings">
+                        <span
+                          className="history-platform-icon"
+                          style={{ background: item.color }}
+                        >
+                          {typeof item.icon === 'string' ? (
+                            <img src={item.icon} alt="" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                          ) : (
+                            item.icon
+                          )}
+                        </span>
+                        <div className="history-info-settings">
+                          <span className="history-title-settings">{item.title}</span>
+                          <span className="history-meta-settings">
+                            {item.platform} · {item.quality} · {item.time}
+                          </span>
+                        </div>
+                        <button
+                          className="history-action-btn"
+                          onClick={() => onSaveFile(item.jobId)}
+                          title="Download"
+                        >
+                          <Save size={16} />
+                        </button>
+                        <button
+                          className="history-action-btn delete"
+                          onClick={() => removeFromHistory(item.id)}
+                          title="Remove"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Download Settings */}
-              <div className="settings-section">
-                <h3><Download size={20} /> Download Settings</h3>
-                <div className="setting-item">
-                  <label>Default Quality</label>
-                  <select className="setting-select">
-                    <option>Best Available</option>
-                    <option>1080p</option>
-                    <option>720p</option>
-                    <option>480p</option>
-                  </select>
+              {/* Data Management - Only show if history exists */}
+              {history.length > 0 && (
+                <div className="settings-section">
+                  <h3><Trash2 size={20} /> Data Management</h3>
+                  <div className="setting-item">
+                    <p className="setting-description">
+                      You have {history.length} download{history.length !== 1 ? 's' : ''} in your history
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              {/* Data Management */}
-              <div className="settings-section">
-                <h3><Trash2 size={20} /> Data Management</h3>
-                <div className="setting-item">
-                  <button 
-                    className="danger-btn"
-                    onClick={() => {
-                      clearHistory()
-                      toggleSettings()
-                    }}
-                  >
-                    <Trash2 size={18} /> Clear All History
-                  </button>
-                  <p className="setting-description">
-                    Remove all download history from local storage
-                  </p>
-                </div>
-              </div>
+              )}
 
               {/* About */}
               <div className="settings-section">
-                <h3>About VidGrab</h3>
+                <h3><Info size={20} /> About VidGrab</h3>
                 <p className="about-text">
                   Version 1.0.0<br />
-                  A modern video downloader supporting 10+ platforms
+                  A modern video downloader supporting 10+ platforms<br />
+                  <br />
+                  <strong>Keyboard Shortcuts:</strong><br />
+                  Ctrl/Cmd + V - Paste URL<br />
+                  Ctrl/Cmd + Enter - Analyze<br />
+                  Escape - Reset
                 </p>
               </div>
             </div>

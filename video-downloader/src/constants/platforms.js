@@ -23,7 +23,7 @@ export const PLATFORMS = [
   { name: 'Pinterest',   pattern: /pinterest\.com/i,               color: '#E60023', icon: pinterestIcon },
 ]
 
-export const API_BASE_URL = 'http://localhost:8787/api'
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787/api'
 
 export const DOWNLOAD_STATUS = {
   IDLE: 'idle',

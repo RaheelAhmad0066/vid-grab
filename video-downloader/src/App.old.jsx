@@ -68,6 +68,7 @@ export default function App() {
   const [jobId, setJobId]         = useState(null)
   const [darkMode, setDarkMode]   = useState(true)
   const [showSettings, setShowSettings] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
   const pollRef                   = useRef(null)
 
   const detectedPlatform = detectPlatform(url)

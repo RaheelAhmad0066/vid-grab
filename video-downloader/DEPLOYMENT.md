@@ -77,14 +77,27 @@ All required files are already created in the `server/` directory:
 
 ### Step 3: Update Frontend Configuration
 
-1. **Update API URL**
+1. **Set Environment Variable**
    
-   Edit `src/constants/platforms.js`:
-   ```javascript
-   export const API_BASE_URL = 'https://your-railway-app.railway.app/api'
+   The frontend now uses environment variables for the API URL. You have two options:
+
+   **Option A: Create `.env` file (for local testing)**
+   ```bash
+   # Create .env file in project root
+   echo "VITE_API_URL=https://your-railway-app.railway.app/api" > .env
    ```
 
-2. **Rebuild Frontend**
+   **Option B: Set in deployment platform (recommended for production)**
+   - Vercel: Add environment variable in project settings
+   - Netlify: Add environment variable in build settings
+   - See "Frontend Deployment" section below for details
+
+2. **Test Locally**
+   ```bash
+   npm run dev
+   ```
+
+3. **Build for Production**
    ```bash
    npm run build
    ```
@@ -93,37 +106,74 @@ All required files are already created in the `server/` directory:
 
 ### Option 1: Vercel
 
-1. **Install Vercel CLI**
+1. **Push to GitHub**
    ```bash
-   npm install -g vercel
+   git add .
+   git commit -m "Deploy to production"
+   git push origin main
    ```
 
-2. **Deploy**
-   ```bash
-   vercel
-   ```
+2. **Import Project in Vercel**
+   - Go to https://vercel.com
+   - Click "New Project"
+   - Import your GitHub repository
+   - Configure project:
+     - Framework Preset: Vite
+     - Build Command: `npm run build`
+     - Output Directory: `dist`
 
-3. **Production Deploy**
-   ```bash
-   vercel --prod
-   ```
+3. **Add Environment Variable**
+   - Go to Project Settings → Environment Variables
+   - Add: `VITE_API_URL` = `https://your-railway-app.railway.app/api`
+   - Apply to: Production, Preview, Development
+
+4. **Deploy**
+   - Click "Deploy"
+   - Wait for deployment to complete
+   - Your app is live! 🎉
+
+**Or use Vercel CLI:**
+```bash
+npm install -g vercel
+vercel
+# Follow prompts and add VITE_API_URL when asked
+vercel --prod
+```
 
 ### Option 2: Netlify
 
-1. **Install Netlify CLI**
+1. **Push to GitHub**
    ```bash
-   npm install -g netlify-cli
+   git add .
+   git commit -m "Deploy to production"
+   git push origin main
    ```
 
-2. **Build**
-   ```bash
-   npm run build
-   ```
+2. **Import Project in Netlify**
+   - Go to https://netlify.com
+   - Click "Add new site" → "Import an existing project"
+   - Choose your GitHub repository
+   - Configure build settings:
+     - Build command: `npm run build`
+     - Publish directory: `dist`
 
-3. **Deploy**
-   ```bash
-   netlify deploy --prod --dir=dist
-   ```
+3. **Add Environment Variable**
+   - Go to Site settings → Environment variables
+   - Add: `VITE_API_URL` = `https://your-railway-app.railway.app/api`
+
+4. **Deploy**
+   - Click "Deploy site"
+   - Wait for deployment to complete
+   - Your app is live! 🎉
+
+**Or use Netlify CLI:**
+```bash
+npm install -g netlify-cli
+netlify login
+netlify init
+# Add environment variable in Netlify dashboard
+netlify deploy --prod
+```
 
 ### Option 3: GitHub Pages
 
@@ -157,10 +207,39 @@ ALLOWED_ORIGINS=https://your-frontend.com,http://localhost:5173
 PYTHON_VERSION=3.13.7
 ```
 
-### Frontend (Build Time)
+**How to set in Railway:**
+```bash
+railway variables set PORT=8787
+railway variables set ALLOWED_ORIGINS=https://your-frontend.vercel.app
+```
+
+Or in Railway Dashboard:
+- Go to your project
+- Click "Variables" tab
+- Add each variable
+
+### Frontend (Vercel/Netlify)
 ```env
 VITE_API_URL=https://your-railway-app.railway.app/api
 ```
+
+**How to set in Vercel:**
+- Project Settings → Environment Variables
+- Add `VITE_API_URL` with your Railway backend URL
+- Redeploy to apply changes
+
+**How to set in Netlify:**
+- Site settings → Environment variables
+- Add `VITE_API_URL` with your Railway backend URL
+- Trigger new deploy
+
+**Local Development:**
+Create a `.env` file in project root:
+```env
+VITE_API_URL=http://localhost:8787/api
+```
+
+**Note:** The `.env` file is gitignored and won't be committed to your repository.
 
 ## Post-Deployment Checklist
 
@@ -198,9 +277,10 @@ railway variables set PORT=8787
 ### Frontend Issues
 
 **Problem: API connection failed**
-- Check API_BASE_URL in `src/constants/platforms.js`
-- Verify Railway backend is running
+- Check `VITE_API_URL` environment variable in your deployment platform
+- Verify Railway backend is running: visit `https://your-app.railway.app/api/health`
 - Check browser console for CORS errors
+- Ensure ALLOWED_ORIGINS in Railway includes your frontend domain
 
 **Problem: Build fails**
 ```bash
@@ -268,23 +348,36 @@ npm run build
 ## Quick Deploy Commands
 
 ```bash
-# Backend (Railway)
+# 1. Deploy Backend to Railway
 cd server
 railway login
 railway init
 railway up
 railway variables set PORT=8787
-railway variables set ALLOWED_ORIGINS=https://your-frontend.com
+railway variables set ALLOWED_ORIGINS=https://your-frontend.vercel.app
 
-# Frontend (Vercel)
+# 2. Get your Railway URL
+railway status
+# Copy the URL (e.g., https://your-app.railway.app)
+
+# 3. Deploy Frontend to Vercel
 cd ..
 vercel
+# When prompted, add environment variable:
+# VITE_API_URL=https://your-app.railway.app/api
 vercel --prod
 
-# Update API URL
-# Edit src/constants/platforms.js
-# Change API_BASE_URL to your Railway URL
+# 4. Update CORS in Railway
+railway variables set ALLOWED_ORIGINS=https://your-app.vercel.app
+
+# Done! 🎉
 ```
+
+**Alternative: Use Web Dashboards**
+1. Deploy backend: https://railway.app → New Project → Deploy from GitHub
+2. Add environment variables in Railway dashboard
+3. Deploy frontend: https://vercel.com → New Project → Import from GitHub
+4. Add `VITE_API_URL` environment variable in Vercel dashboard
 
 ## Success! 🎉
 
