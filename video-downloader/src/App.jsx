@@ -17,6 +17,7 @@ import vimeoIcon from './assets/vimeo.png'
 import redditIcon from './assets/redlit.png'
 import twitchIcon from './assets/twitch.png'
 import pinterestIcon from './assets/pintrest.png'
+import dailymotionIcon from './assets/daily-motion.png'
 
 const API = 'http://localhost:8787/api'
 
@@ -28,7 +29,7 @@ const PLATFORMS = [
   { name: 'TikTok',      pattern: /tiktok\.com/i,                  color: '#ff0050', icon: tiktokIcon },
   { name: 'Vimeo',       pattern: /vimeo\.com/i,                   color: '#1AB7EA', icon: vimeoIcon },
   { name: 'Reddit',      pattern: /reddit\.com/i,                  color: '#FF4500', icon: redditIcon },
-  { name: 'Dailymotion', pattern: /dailymotion\.com/i,             color: '#0066DC', icon: <Film size={16} /> },
+  { name: 'Dailymotion', pattern: /dailymotion\.com/i,             color: '#0066DC', icon: dailymotionIcon },
   { name: 'Twitch',      pattern: /twitch\.tv/i,                   color: '#9146FF', icon: twitchIcon },
   { name: 'Pinterest',   pattern: /pinterest\.com/i,               color: '#E60023', icon: pinterestIcon },
 ]
