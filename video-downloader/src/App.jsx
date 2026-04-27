@@ -1,19 +1,34 @@
 import { useState, useCallback, useRef } from 'react'
 import './App.css'
+import { 
+  Download, Search, Clipboard, X, CheckCheck, 
+  Save, Film, User, AlertCircle, Loader2, ArrowRight
+} from 'lucide-react'
+
+// Import platform icons
+import youtubeIcon from './assets/youtube.png'
+import facebookIcon from './assets/facebook.png'
+import instagramIcon from './assets/instagram.png'
+import twitterIcon from './assets/twitter.png'
+import tiktokIcon from './assets/tik-tok.png'
+import vimeoIcon from './assets/vimeo.png'
+import redditIcon from './assets/redlit.png'
+import twitchIcon from './assets/twitch.png'
+import pinterestIcon from './assets/pintrest.png'
 
 const API = 'http://localhost:8787/api'
 
 const PLATFORMS = [
-  { name: 'YouTube',     pattern: /youtube\.com|youtu\.be/i,      color: '#FF0000', icon: '▶' },
-  { name: 'Facebook',    pattern: /facebook\.com|fb\.watch/i,      color: '#1877F2', icon: 'f' },
-  { name: 'Instagram',   pattern: /instagram\.com/i,               color: '#E1306C', icon: '📷' },
-  { name: 'Twitter / X', pattern: /twitter\.com|x\.com/i,          color: '#1DA1F2', icon: '𝕏' },
-  { name: 'TikTok',      pattern: /tiktok\.com/i,                  color: '#ff0050', icon: '♪' },
-  { name: 'Vimeo',       pattern: /vimeo\.com/i,                   color: '#1AB7EA', icon: '▷' },
-  { name: 'Reddit',      pattern: /reddit\.com/i,                  color: '#FF4500', icon: '🤖' },
-  { name: 'Dailymotion', pattern: /dailymotion\.com/i,             color: '#0066DC', icon: '◉' },
-  { name: 'Twitch',      pattern: /twitch\.tv/i,                   color: '#9146FF', icon: '🎮' },
-  { name: 'Pinterest',   pattern: /pinterest\.com/i,               color: '#E60023', icon: '📌' },
+  { name: 'YouTube',     pattern: /youtube\.com|youtu\.be/i,      color: '#FF0000', icon: youtubeIcon },
+  { name: 'Facebook',    pattern: /facebook\.com|fb\.watch/i,      color: '#1877F2', icon: facebookIcon },
+  { name: 'Instagram',   pattern: /instagram\.com/i,               color: '#E1306C', icon: instagramIcon },
+  { name: 'Twitter / X', pattern: /twitter\.com|x\.com/i,          color: '#1DA1F2', icon: twitterIcon },
+  { name: 'TikTok',      pattern: /tiktok\.com/i,                  color: '#ff0050', icon: tiktokIcon },
+  { name: 'Vimeo',       pattern: /vimeo\.com/i,                   color: '#1AB7EA', icon: vimeoIcon },
+  { name: 'Reddit',      pattern: /reddit\.com/i,                  color: '#FF4500', icon: redditIcon },
+  { name: 'Dailymotion', pattern: /dailymotion\.com/i,             color: '#0066DC', icon: <Film size={16} /> },
+  { name: 'Twitch',      pattern: /twitch\.tv/i,                   color: '#9146FF', icon: twitchIcon },
+  { name: 'Pinterest',   pattern: /pinterest\.com/i,               color: '#E60023', icon: pinterestIcon },
 ]
 
 function detectPlatform(url) {
@@ -188,7 +203,7 @@ export default function App() {
         {/* ── Header ── */}
         <header className="header">
           <div className="logo">
-            <span className="logo-icon">⬇</span>
+            <span className="logo-icon"><Download size={32} /></span>
             <span className="logo-text">VidGrab</span>
           </div>
           <p className="tagline">Download videos from any platform, instantly</p>
@@ -202,7 +217,13 @@ export default function App() {
               className={`platform-badge ${detectedPlatform?.name === p.name ? 'active' : ''}`}
               style={{ '--p-color': p.color }}
             >
-              <span className="platform-icon">{p.icon}</span>
+              <span className="platform-icon">
+                {typeof p.icon === 'string' ? (
+                  <img src={p.icon} alt={p.name} style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                ) : (
+                  p.icon
+                )}
+              </span>
               <span className="platform-name">{p.name}</span>
             </span>
           ))}
@@ -216,7 +237,11 @@ export default function App() {
             <div className={`input-wrapper ${detectedPlatform ? 'has-platform' : ''} ${status === 'error' ? 'has-error' : ''}`}>
               {detectedPlatform && (
                 <span className="input-platform-badge" style={{ background: detectedPlatform.color }}>
-                  {detectedPlatform.icon} {detectedPlatform.name}
+                  {typeof detectedPlatform.icon === 'string' ? (
+                    <img src={detectedPlatform.icon} alt={detectedPlatform.name} style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                  ) : (
+                    detectedPlatform.icon
+                  )} {detectedPlatform.name}
                 </span>
               )}
               <input
@@ -234,15 +259,17 @@ export default function App() {
                 onClick={handlePaste}
                 title="Paste from clipboard"
               >
-                {pasteHint ? '✓' : '📋'}
+                {pasteHint ? <CheckCheck size={18} /> : <Clipboard size={18} />}
               </button>
               {url && (
-                <button className="clear-btn" onClick={handleReset} title="Clear">✕</button>
+                <button className="clear-btn" onClick={handleReset} title="Clear">
+                  <X size={18} />
+                </button>
               )}
             </div>
             {status === 'error' && (
               <div className="error-msg" role="alert">
-                <span>⚠</span> {errorMsg}
+                <AlertCircle size={18} /> {errorMsg}
               </div>
             )}
           </div>
@@ -254,7 +281,7 @@ export default function App() {
               onClick={handleAnalyze}
               disabled={!url.trim()}
             >
-              <span className="btn-icon">🔍</span>
+              <span className="btn-icon"><Search size={20} /></span>
               Analyze Video
             </button>
           )}
@@ -262,7 +289,7 @@ export default function App() {
           {/* Analyzing spinner */}
           {status === 'analyzing' && (
             <div className="analyzing-state">
-              <div className="spinner" />
+              <Loader2 className="spinner" size={32} />
               <span>Fetching video info…</span>
             </div>
           )}
@@ -273,12 +300,16 @@ export default function App() {
               <div className="video-thumb-wrap">
                 {videoInfo.thumbnail
                   ? <img src={videoInfo.thumbnail} alt="thumbnail" className="video-thumb" />
-                  : <div className="thumb-placeholder">🎬</div>
+                  : <div className="thumb-placeholder"><Film size={48} /></div>
                 }
                 <span className="video-duration">{videoInfo.duration}</span>
                 {platform && (
                   <span className="video-platform-tag" style={{ background: platform.color }}>
-                    {platform.icon} {platform.name}
+                    {typeof platform.icon === 'string' ? (
+                      <img src={platform.icon} alt={platform.name} style={{ width: '14px', height: '14px', objectFit: 'contain' }} />
+                    ) : (
+                      platform.icon
+                    )} {platform.name}
                   </span>
                 )}
               </div>
@@ -286,7 +317,7 @@ export default function App() {
               <div className="video-meta">
                 <h3 className="video-title">{videoInfo.title}</h3>
                 {videoInfo.uploader && (
-                  <p className="video-uploader">👤 {videoInfo.uploader}</p>
+                  <p className="video-uploader"><User size={16} /> {videoInfo.uploader}</p>
                 )}
 
                 {/* Format selector */}
@@ -312,10 +343,10 @@ export default function App() {
 
                 {status === 'done' ? (
                   <div className="done-state">
-                    <span className="done-icon">✅</span>
+                    <span className="done-icon"><CheckCheck size={24} /></span>
                     <span>Ready to save!</span>
                     <button className="download-btn save-btn" onClick={() => handleSaveFile(jobId)}>
-                      💾 Save File
+                      <Save size={20} /> Save File
                     </button>
                     <button className="reset-btn" onClick={handleReset}>
                       Download another
@@ -327,7 +358,7 @@ export default function App() {
                     onClick={handleDownload}
                     disabled={!selectedFmt}
                   >
-                    <span className="btn-icon">⬇</span> Download Now
+                    <span className="btn-icon"><Download size={20} /></span> Download Now
                   </button>
                 )}
               </div>
@@ -366,7 +397,7 @@ export default function App() {
                 <span>Go to any supported platform and copy the video link</span>
               </div>
             </div>
-            <div className="step-arrow">→</div>
+            <div className="step-arrow"><ArrowRight size={24} /></div>
             <div className="step">
               <div className="step-num">2</div>
               <div className="step-text">
@@ -374,7 +405,7 @@ export default function App() {
                 <span>Paste the URL above and click Analyze</span>
               </div>
             </div>
-            <div className="step-arrow">→</div>
+            <div className="step-arrow"><ArrowRight size={24} /></div>
             <div className="step">
               <div className="step-num">3</div>
               <div className="step-text">
@@ -396,7 +427,11 @@ export default function App() {
                     className="history-platform"
                     style={{ background: item.color }}
                   >
-                    {item.icon}
+                    {typeof item.icon === 'string' ? (
+                      <img src={item.icon} alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+                    ) : (
+                      item.icon
+                    )}
                   </span>
                   <div className="history-info">
                     <span className="history-title">{item.title}</span>
@@ -409,7 +444,7 @@ export default function App() {
                     onClick={() => handleSaveFile(item.jobId)}
                     title="Save file"
                   >
-                    💾
+                    <Save size={18} />
                   </button>
                 </div>
               ))}

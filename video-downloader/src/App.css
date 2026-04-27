@@ -120,7 +120,18 @@
   transform: scale(1.06);
   box-shadow: 0 0 12px color-mix(in srgb, var(--p-color) 30%, transparent);
 }
-.platform-icon { font-size: 14px; }
+.platform-icon { 
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.platform-icon img {
+  filter: brightness(0.8);
+}
+.platform-badge.active .platform-icon img {
+  filter: brightness(1);
+}
 .platform-name { font-size: 12px; }
 
 /* ===== Main Card ===== */
@@ -312,11 +323,8 @@
   animation: fadeIn 0.3s ease;
 }
 .spinner {
-  width: 28px; height: 28px;
-  border: 3px solid var(--badge-border);
-  border-top-color: #7c3aed;
-  border-radius: 50%;
   animation: spin 0.8s linear infinite;
+  color: #7c3aed;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeIn {
