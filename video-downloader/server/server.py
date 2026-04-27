@@ -1,22 +1,30 @@
+import os
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import yt_dlp
-import os
 import ssl
 import certifi
 import tempfile
 import threading
 import uuid
 
+# ── Environment Configuration ──────────────────────────
+PORT = int(os.environ.get('PORT', 8787))
+ALLOWED_ORIGINS = os.environ.get('ALLOWED_ORIGINS', '*').split(',')
+
 # ── Fix macOS SSL certificate issue ──────────────────────────
 os.environ['SSL_CERT_FILE'] = certifi.where()
 os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
 ssl_ctx = ssl.create_default_context(cafile=certifi.where())
-# Patch default SSL context so yt-dlp uses certifi certs
 ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=certifi.where())
 
 app = Flask(__name__)
-CORS(app)
+
+# Configure CORS
+if ALLOWED_ORIGINS == ['*']:
+    CORS(app)
+else:
+    CORS(app, origins=ALLOWED_ORIGINS)
 
 # Store download progress per job
 progress_store = {}
@@ -229,5 +237,5 @@ def health():
 
 
 if __name__ == '__main__':
-    print('🚀 VidGrab backend running on http://localhost:8787')
-    app.run(host='0.0.0.0', port=8787, debug=False)
+    print(f'🚀 VidGrab backend running on http://0.0.0.0:{PORT}')
+    app.run(host='0.0.0.0', port=PORT, debug=False)
