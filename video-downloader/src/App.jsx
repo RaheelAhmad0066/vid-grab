@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import React from 'react'
+import { Routes, Route } from 'react-router-dom'
 import './App.css'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast, { Toaster } from 'react-hot-toast'
@@ -20,6 +21,17 @@ import { TopBar } from './components/TopBar'
 import { PlatformBadges } from './components/PlatformBadges'
 import { SettingsPanel } from './components/SettingsPanel'
 import { VideoPreviewModal } from './components/VideoPreviewModal'
+import { Navigation } from './components/Navigation'
+
+// Pages
+import { PrivacyPolicy } from './pages/PrivacyPolicy'
+import { TermsOfService } from './pages/TermsOfService'
+import { DMCA } from './pages/DMCA'
+import { Contact } from './pages/Contact'
+import { About } from './pages/About'
+import { FAQ } from './pages/FAQ'
+import { Blog } from './pages/Blog'
+import { BlogPost } from './pages/BlogPost'
 
 // Utils
 import { detectPlatform } from './utils/platform'
@@ -94,7 +106,7 @@ export default function App() {
 
   return (
     <div className={`app ${darkMode ? 'dark' : 'light'}`}>
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
@@ -105,16 +117,17 @@ export default function App() {
           },
         }}
       />
-      
+
       <div className="bg-blob blob-1" />
       <div className="bg-blob blob-2" />
       <div className="bg-blob blob-3" />
 
       <TopBar />
-      
+      <Navigation />
+
       <SettingsPanel onSaveFile={saveFile} />
       
-      <VideoPreviewModal 
+      <VideoPreviewModal
         isOpen={showPreview}
         onClose={() => setShowPreview(false)}
         videoInfo={videoInfo}
@@ -122,7 +135,9 @@ export default function App() {
         platform={platform}
       />
 
-      <div className="container">
+      <Routes>
+        <Route path="/" element={
+          <div className="container">
         {/* Header */}
         <motion.header 
           className="header"
@@ -548,9 +563,37 @@ export default function App() {
         </AnimatePresence>
 
         <footer className="footer">
-          <p>VidGrab — Download responsibly. Respect copyright and platform terms of service.</p>
+          <div className="footer-content">
+            <p className="footer-disclaimer">
+              <strong>Copyright Disclaimer:</strong> VidGrab is a tool for personal, non-commercial use only. 
+              Users are responsible for ensuring their use of downloaded content complies with applicable laws 
+              and platform terms of service. We do not host any content on our servers.
+            </p>
+            <div className="footer-links">
+              <a href="/privacy">Privacy Policy</a>
+              <span>·</span>
+              <a href="/terms">Terms of Service</a>
+              <span>·</span>
+              <a href="/dmca">DMCA</a>
+              <span>·</span>
+              <a href="/contact">Contact</a>
+            </div>
+            <p className="footer-copy">
+              © {new Date().getFullYear()} VidGrab. All rights reserved.
+            </p>
+          </div>
         </footer>
-      </div>
+          </div>
+        } />
+        <Route path="/about" element={<About />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/dmca" element={<DMCA />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
+      </Routes>
     </div>
   )
 }
