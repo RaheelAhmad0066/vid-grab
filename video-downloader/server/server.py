@@ -68,6 +68,19 @@ def get_info():
         'skip_download': True,
         'noplaylist': True,
         'nocheckcertificate': False,  # certifi handles this
+        'extract_flat': False,
+        'socket_timeout': 30,
+        'retries': 3,
+        'fragment_retries': 3,
+        'extractor_retries': 3,
+        'file_access_retries': 3,
+        'http_chunk_size': 16384,
+        'extractor_args': {
+            'instagram': {
+                'skip_download': True,
+                'extract_flat': False,
+            }
+        }
     }
 
     try:
@@ -118,7 +131,11 @@ def get_info():
         })
 
     except yt_dlp.utils.DownloadError as e:
-        return jsonify({'error': str(e).replace('ERROR: ', '')}), 400
+        error_msg = str(e).replace('ERROR: ', '')
+        # Handle specific Instagram rate limit error
+        if 'rate-limit' in error_msg.lower() or 'login required' in error_msg.lower():
+            return jsonify({'error': 'Instagram is temporarily limiting requests. Please try again in a few minutes or use a different video.'}), 429
+        return jsonify({'error': error_msg}), 400
     except Exception as e:
         return jsonify({'error': f'Failed to fetch video info: {str(e)}'}), 500
 
