@@ -37,6 +37,8 @@ import { BlogPost } from './pages/BlogPost'
 import { detectPlatform } from './utils/platform'
 import { DOWNLOAD_STATUS } from './constants/platforms'
 import logo from './assets/logo.png'
+import lineLeft from './assets/ine_left.svg'
+import lineRight from './assets/line_right.svg'
 
 export default function App() {
   // Store
@@ -427,7 +429,7 @@ export default function App() {
         </motion.div>
 
         {/* How It Works */}
-        <motion.div 
+        <motion.div
           className="how-it-works"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -435,66 +437,67 @@ export default function App() {
           transition={{ duration: 0.6 }}
         >
           <h2>How it works</h2>
-          <div className="steps">
-            <motion.div 
-              className="step"
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
+          <div className="steps-container">
+            <motion.div
+              className="step-item"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1, duration: 0.5 }}
               whileHover={{ scale: 1.05, y: -5 }}
             >
-              <div className="step-num">1</div>
-              <div className="step-text">
-                <strong>Copy the URL</strong>
-                <span>Go to any supported platform and copy the video link</span>
+              <div className="step-icon-wrapper purple-gradient">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15 3H6C5.46957 3 4.96086 3.21071 4.58579 3.58579C4.21071 3.96086 4 4.46957 4 5V19C4 19.5304 4.21071 20.0391 4.58579 20.4142C4.96086 20.7893 5.46957 21 6 21H18C18.5304 21 19.0391 20.7893 19.4142 20.4142C19.7893 20.0391 20 19.5304 20 19V8L15 3Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M9 15L12 18L15 15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 9V18" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </div>
+              <h3>Copy URL</h3>
+              <p>Go to any supported platform and copy the video link</p>
             </motion.div>
-            <motion.div 
-              className="step-arrow"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 }}
-            >
-              <ArrowRight size={24} />
-            </motion.div>
-            <motion.div 
-              className="step"
-              initial={{ opacity: 0, y: 30 }}
+            <div className="step-divider">
+              <img src={lineRight} alt="" className="line-svg" />
+            </div>
+            <motion.div
+              className="step-item"
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2, duration: 0.5 }}
               whileHover={{ scale: 1.05, y: -5 }}
             >
-              <div className="step-num">2</div>
-              <div className="step-text">
-                <strong>Paste & Analyze</strong>
-                <span>Paste the URL above and click Analyze</span>
+              <div className="step-icon-wrapper blue-gradient">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="11" cy="11" r="8" stroke="white" strokeWidth="2"/>
+                  <path d="M21 21L16.65 16.65" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M11 8V14" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M8 11H14" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
               </div>
+              <h3>Paste & Analyze</h3>
+              <p>Paste the URL above and click Analyze</p>
             </motion.div>
-            <motion.div 
-              className="step-arrow"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-            >
-              <ArrowRight size={24} />
-            </motion.div>
-            <motion.div 
-              className="step"
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
+            <div className="step-divider">
+              <img src={lineLeft} alt="" className="line-svg" />
+            </div>
+            <motion.div
+              className="step-item"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3, duration: 0.5 }}
               whileHover={{ scale: 1.05, y: -5 }}
             >
-              <div className="step-num">3</div>
-              <div className="step-text">
-                <strong>Download</strong>
-                <span>Choose quality and hit Download Now</span>
+              <div className="step-icon-wrapper pink-gradient">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M7 10L12 15L17 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 15V3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </div>
+              <h3>Download</h3>
+              <p>Choose quality and hit Download Now</p>
             </motion.div>
           </div>
         </motion.div>
