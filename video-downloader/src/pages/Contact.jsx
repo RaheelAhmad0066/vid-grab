@@ -58,21 +58,21 @@ export const Contact = () => {
               <Mail size={20} />
               <div>
                 <strong>Email Support</strong>
-                <p>support@vidgrab.com</p>
+                <p>support@vidrivo.com</p>
               </div>
             </div>
             <div className="contact-item">
               <Mail size={20} />
               <div>
                 <strong>DMCA Inquiries</strong>
-                <p>dmca@vidgrab.com</p>
+                <p>dmca@vidrivo.com</p>
               </div>
             </div>
             <div className="contact-item">
               <Mail size={20} />
               <div>
                 <strong>Business Inquiries</strong>
-                <p>business@vidgrab.com</p>
+                <p>business@vidrivo.com</p>
               </div>
             </div>
 

@@ -19,7 +19,7 @@ export const PrivacyPolicy = () => {
         <section>
           <h2>1. Introduction</h2>
           <p>
-            VidGrab ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy 
+            VidRivo ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy 
             explains how we collect, use, and safeguard your information when you use our video downloader service.
           </p>
         </section>
@@ -117,7 +117,7 @@ export const PrivacyPolicy = () => {
           <p>
             If you have questions about this Privacy Policy, please contact us at:
           </p>
-          <p>Email: support@vidgrab.com</p>
+          <p>Email: support@vidrivo.com</p>
         </section>
       </div>
     </motion.div>

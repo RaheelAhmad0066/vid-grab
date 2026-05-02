@@ -14,7 +14,7 @@ export const About = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="legal-container about-container">
-        <h1>About VidGrab</h1>
+        <h1>About VidRivo</h1>
         <p className="about-intro">
           Your trusted companion for downloading videos from the internet's most popular platforms.
         </p>
@@ -22,7 +22,7 @@ export const About = () => {
         <section className="about-mission">
           <h2>Our Mission</h2>
           <p>
-            VidGrab was founded with a simple mission: to make it easy for people to save and enjoy 
+            VidRivo was founded with a simple mission: to make it easy for people to save and enjoy 
             videos from their favorite platforms for personal, offline viewing. We believe that once 
             you've found content you love, you should have the freedom to watch it anytime, anywhere.
           </p>
@@ -31,13 +31,13 @@ export const About = () => {
         <section className="about-story">
           <h2>Our Story</h2>
           <p>
-            VidGrab started as a personal project born out of frustration. We wanted a simple, 
+            VidRivo started as a personal project born out of frustration. We wanted a simple, 
             reliable way to download videos for offline viewing without complicated software or 
             confusing interfaces. What began as a small tool has grown into a platform that helps 
             thousands of users worldwide.
           </p>
           <p>
-            Today, VidGrab supports over 10 major video platforms, including YouTube, Facebook, 
+            Today, VidRivo supports over 10 major video platforms, including YouTube, Facebook, 
             Instagram, TikTok, Twitter, Vimeo, Reddit, Twitch, Pinterest, and Dailymotion. We're 
             constantly adding new platforms and improving our service based on user feedback.
           </p>
@@ -83,7 +83,7 @@ export const About = () => {
         <section className="about-legal">
           <h2>Legal & Responsible Use</h2>
           <p>
-            VidGrab is designed for personal, non-commercial use. We encourage all users to:
+            VidRivo is designed for personal, non-commercial use. We encourage all users to:
           </p>
           <ul>
             <li>Respect copyright and intellectual property rights</li>
@@ -100,7 +100,7 @@ export const About = () => {
         <section className="about-team">
           <h2>Our Team</h2>
           <p>
-            VidGrab is built and maintained by a small team of passionate developers who believe in 
+            VidRivo is built and maintained by a small team of passionate developers who believe in 
             the power of accessible technology. We're constantly improving our service based on your 
             feedback and needs.
           </p>
@@ -110,7 +110,7 @@ export const About = () => {
           <h2>Get in Touch</h2>
           <p>
             Have questions, feedback, or suggestions? We'd love to hear from you. Reach out to us at 
-            <a href="mailto:support@vidgrab.com">support@vidgrab.com</a> or use our <a href="/contact">contact form</a>.
+            <a href="mailto:support@vidrivo.com">support@vidrivo.com</a> or use our <a href="/contact">contact form</a>.
           </p>
         </section>
 

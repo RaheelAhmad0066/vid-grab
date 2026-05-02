@@ -1,4 +1,7 @@
 import os
+import re
+import html as html_module
+import urllib.request
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import yt_dlp
@@ -29,6 +32,59 @@ else:
 # Store download progress per job
 progress_store = {}
 DOWNLOAD_DIR = tempfile.mkdtemp()
+
+
+MOVIEBOX_DOMAINS = re.compile(r'moviebox\.ph|moviebox\.com|movieboxpro\.com', re.IGNORECASE)
+BROWSER_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+}
+
+
+def fetch_moviebox_info(url):
+    """Scrape MovieBox page and return video metadata + direct mp4 URL."""
+    req = urllib.request.Request(url, headers=BROWSER_HEADERS)
+    with urllib.request.urlopen(req, timeout=15, context=ssl_ctx) as resp:
+        page = resp.read().decode('utf-8', errors='replace')
+        final_url = resp.geturl()
+
+    # If we got a short link that redirected, fetch the resolved page
+    if final_url != url and 'moviebox' in final_url:
+        req2 = urllib.request.Request(final_url, headers=BROWSER_HEADERS)
+        with urllib.request.urlopen(req2, timeout=15, context=ssl_ctx) as resp2:
+            page = resp2.read().decode('utf-8', errors='replace')
+
+    title_m = re.search(r'<title[^>]*>(.*?)</title>', page, re.DOTALL)
+    title = html_module.unescape(title_m.group(1).strip()) if title_m else 'MovieBox Video'
+    # Strip " - MovieBox" suffix if present
+    title = re.sub(r'\s*[-|]\s*MovieBox.*$', '', title, flags=re.IGNORECASE).strip()
+
+    thumb_m = re.search(r'(https?://[^\s"<>]+\.(?:jpg|jpeg|png|webp)[^\s"<>]*)', page)
+    thumbnail = thumb_m.group(1) if thumb_m else ''
+
+    mp4_m = re.search(r'(https?://[^\s"<>]+\.mp4[^\s"<>]*)', page)
+    if not mp4_m:
+        raise ValueError('Could not find video URL on MovieBox page')
+    video_url = mp4_m.group(1)
+
+    dur_m = re.search(r'"duration"\s*:\s*(\d+)', page)
+    duration_secs = int(dur_m.group(1)) if dur_m else 0
+    mins = duration_secs // 60
+    secs = duration_secs % 60
+
+    return {
+        'title': title,
+        'thumbnail': thumbnail,
+        'duration': f'{mins}:{secs:02d}',
+        'uploader': 'MovieBox',
+        'view_count': 0,
+        'video_url': video_url,
+        'formats': [
+            {'format_id': 'direct_mp4', 'label': 'Best Quality (MP4)', 'height': 720, 'ext': 'mp4', 'filesize': None},
+            {'format_id': 'bestaudio/best', 'label': 'Audio Only (MP3)', 'height': 0, 'ext': 'mp3', 'filesize': None},
+        ],
+    }
 
 
 def progress_hook(job_id):
@@ -82,6 +138,14 @@ def get_info():
             }
         }
     }
+
+    # MovieBox: scrape directly — yt-dlp has no extractor for it
+    if MOVIEBOX_DOMAINS.search(url):
+        try:
+            info = fetch_moviebox_info(url)
+            return jsonify(info)
+        except Exception as e:
+            return jsonify({'error': f'Failed to fetch MovieBox video: {str(e)}'}), 400
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -153,6 +217,42 @@ def start_download():
 
     job_id = str(uuid.uuid4())
     progress_store[job_id] = {'status': 'starting', 'percent': 0}
+
+    def run_moviebox_download():
+        try:
+            mb_info = fetch_moviebox_info(url)
+            video_url = mb_info['video_url']
+            ext = 'mp4'
+            filepath = os.path.join(DOWNLOAD_DIR, f'{job_id}.{ext}')
+            progress_store[job_id] = {'status': 'downloading', 'percent': 0}
+
+            req = urllib.request.Request(video_url, headers=BROWSER_HEADERS)
+            with urllib.request.urlopen(req, timeout=60, context=ssl_ctx) as resp:
+                total = int(resp.headers.get('Content-Length', 0))
+                downloaded = 0
+                with open(filepath, 'wb') as f:
+                    while True:
+                        chunk = resp.read(65536)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        percent = int((downloaded / total) * 100) if total else 0
+                        progress_store[job_id] = {'status': 'downloading', 'percent': percent}
+
+            progress_store[job_id] = {
+                'status': 'finished', 'percent': 100,
+                'filepath': filepath,
+                'title': mb_info['title'],
+                'ext': ext,
+            }
+        except Exception as e:
+            progress_store[job_id] = {'status': 'error', 'percent': 0, 'error': str(e)}
+
+    if MOVIEBOX_DOMAINS.search(url):
+        thread = threading.Thread(target=run_moviebox_download, daemon=True)
+        thread.start()
+        return jsonify({'job_id': job_id})
 
     def run_download():
         output_path = os.path.join(DOWNLOAD_DIR, f'{job_id}.%(ext)s')
@@ -254,5 +354,5 @@ def health():
 
 
 if __name__ == '__main__':
-    print(f'🚀 VidGrab backend running on http://0.0.0.0:{PORT}')
+    print(f'🚀 VidRivo backend running on http://0.0.0.0:{PORT}')
     app.run(host='0.0.0.0', port=PORT, debug=False)

@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemaps
-Sitemap: https://vidgrab-app.web.app/sitemap.xml
+Sitemap: https://vidrivo-app.web.app/sitemap.xml
 
 # Crawl-delay
 Crawl-delay: 1

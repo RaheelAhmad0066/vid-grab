@@ -9,28 +9,28 @@ export const FAQ = () => {
 
   const faqs = [
     {
-      question: "What is VidGrab?",
-      answer: "VidGrab is a free online tool that allows you to download videos from various popular platforms like YouTube, Facebook, Instagram, TikTok, Twitter, Vimeo, Reddit, and more. It's designed for personal, non-commercial use."
+      question: "What is VidRivo?",
+      answer: "VidRivo is a free online tool that allows you to download videos from various popular platforms like YouTube, Facebook, Instagram, TikTok, Twitter, Vimeo, Reddit, and more. It's designed for personal, non-commercial use."
     },
     {
-      question: "Is VidGrab free to use?",
-      answer: "Yes, VidGrab is completely free to use. No registration or payment required. Simply paste the video URL and download."
+      question: "Is VidRivo free to use?",
+      answer: "Yes, VidRivo is completely free to use. No registration or payment required. Simply paste the video URL and download."
     },
     {
       question: "What video quality options are available?",
-      answer: "VidGrab offers multiple quality options depending on the source video. You can typically choose from 360p, 480p, 720p, 1080p, and higher resolutions when available. We also offer an audio-only option for MP3 downloads."
+      answer: "VidRivo offers multiple quality options depending on the source video. You can typically choose from 360p, 480p, 720p, 1080p, and higher resolutions when available. We also offer an audio-only option for MP3 downloads."
     },
     {
       question: "Is it legal to download videos?",
-      answer: "Downloading videos for personal, non-commercial use is generally acceptable in many jurisdictions. However, laws vary by country. We recommend checking your local laws and the terms of service of the content platform. VidGrab is intended for personal use only."
+      answer: "Downloading videos for personal, non-commercial use is generally acceptable in many jurisdictions. However, laws vary by country. We recommend checking your local laws and the terms of service of the content platform. VidRivo is intended for personal use only."
     },
     {
       question: "Do I need to create an account?",
-      answer: "No, you don't need to create an account. VidGrab is designed to be simple and accessible without registration. Just paste the URL and download."
+      answer: "No, you don't need to create an account. VidRivo is designed to be simple and accessible without registration. Just paste the URL and download."
     },
     {
-      question: "What platforms does VidGrab support?",
-      answer: "VidGrab supports YouTube, Facebook, Instagram, TikTok, Twitter/X, Vimeo, Reddit, Dailymotion, Twitch, and Pinterest. We're constantly adding support for more platforms."
+      question: "What platforms does VidRivo support?",
+      answer: "VidRivo supports YouTube, Facebook, Instagram, TikTok, Twitter/X, Vimeo, Reddit, Dailymotion, Twitch, and Pinterest. We're constantly adding support for more platforms."
     },
     {
       question: "Are there any download limits?",
@@ -38,19 +38,19 @@ export const FAQ = () => {
     },
     {
       question: "How do I download a video?",
-      answer: "It's simple: 1) Copy the video URL from the platform, 2) Paste it into VidGrab's input field, 3) Click 'Analyze Video', 4) Select your preferred quality, 5) Click 'Download Now'."
+      answer: "It's simple: 1) Copy the video URL from the platform, 2) Paste it into VidRivo's input field, 3) Click 'Analyze Video', 4) Select your preferred quality, 5) Click 'Download Now'."
     },
     {
       question: "Can I download videos on mobile devices?",
-      answer: "Yes, VidGrab works on all devices including smartphones and tablets. Our website is fully responsive and optimized for mobile browsers."
+      answer: "Yes, VidRivo works on all devices including smartphones and tablets. Our website is fully responsive and optimized for mobile browsers."
     },
     {
       question: "What file formats are supported?",
       answer: "Videos are typically downloaded in MP4 format, which is compatible with most devices. Audio downloads are in MP3 format. The exact format may vary depending on the source platform."
     },
     {
-      question: "Is VidGrab safe to use?",
-      answer: "Yes, VidGrab is safe to use. We don't require any personal information, and we don't host any files on our servers. All downloads are processed securely. We also don't install any software on your device."
+      question: "Is VidRivo safe to use?",
+      answer: "Yes, VidRivo is safe to use. We don't require any personal information, and we don't host any files on our servers. All downloads are processed securely. We also don't install any software on your device."
     },
     {
       question: "What should I do if a download fails?",
@@ -65,15 +65,15 @@ export const FAQ = () => {
       answer: "Downloaded files are available immediately after the download completes. We recommend saving them to your device promptly, as temporary files on our servers may be cleaned up periodically."
     },
     {
-      question: "Does VidGrab work with private or restricted videos?",
-      answer: "No, VidGrab only works with publicly accessible videos. Private, restricted, or age-restricted content cannot be downloaded."
+      question: "Does VidRivo work with private or restricted videos?",
+      answer: "No, VidRivo only works with publicly accessible videos. Private, restricted, or age-restricted content cannot be downloaded."
     },
     {
       question: "How can I contact support?",
-      answer: "You can reach our support team at support@vidgrab.com or use the contact form on our website. We typically respond within 24-48 hours."
+      answer: "You can reach our support team at support@vidrivo.com or use the contact form on our website. We typically respond within 24-48 hours."
     },
     {
-      question: "Does VidGrab collect my data?",
+      question: "Does VidRivo collect my data?",
       answer: "We collect minimal data necessary to provide our service, including usage analytics and technical information. We don't collect personal data without your consent. See our Privacy Policy for details."
     },
     {
@@ -86,7 +86,7 @@ export const FAQ = () => {
     },
     {
       question: "How do I report a copyright issue?",
-      answer: "If you believe your copyrighted content is being misused through our service, please send a DMCA takedown notice to dmca@vidgrab.com. See our DMCA Policy for the required information."
+      answer: "If you believe your copyrighted content is being misused through our service, please send a DMCA takedown notice to dmca@vidrivo.com. See our DMCA Policy for the required information."
     }
   ]
 
@@ -104,7 +104,7 @@ export const FAQ = () => {
       <div className="legal-container faq-container">
         <h1>Frequently Asked Questions</h1>
         <p className="faq-intro">
-          Find answers to common questions about VidGrab. Can't find what you're looking for? 
+          Find answers to common questions about VidRivo. Can't find what you're looking for? 
           <a href="/contact"> Contact us</a>.
         </p>
 

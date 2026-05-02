@@ -1,6 +1,6 @@
 {
-  "name": "VidGrab - Free Video Downloader",
-  "short_name": "VidGrab",
+  "name": "VidRivo - Free Video Downloader",
+  "short_name": "VidRivo",
   "description": "Download videos from YouTube, Facebook, Instagram, TikTok, Twitter and 10+ platforms. Free, fast, HD quality.",
   "start_url": "/",
   "display": "standalone",

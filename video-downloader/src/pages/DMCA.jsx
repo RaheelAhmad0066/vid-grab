@@ -19,7 +19,7 @@ export const DMCA = () => {
         <section>
           <h2>1. Copyright Infringement Policy</h2>
           <p>
-            VidGrab respects the intellectual property rights of others and expects users of our service 
+            VidRivo respects the intellectual property rights of others and expects users of our service 
             to do the same. We comply with the Digital Millennium Copyright Act (DMCA) and other 
             applicable copyright laws.
           </p>
@@ -28,7 +28,7 @@ export const DMCA = () => {
         <section>
           <h2>2. Our Position on Copyright</h2>
           <p>
-            VidGrab is a tool designed to help users download videos for personal, non-commercial use. 
+            VidRivo is a tool designed to help users download videos for personal, non-commercial use. 
             We do not host any content on our servers. All content is downloaded from third-party platforms.
           </p>
           <p>
@@ -74,7 +74,7 @@ export const DMCA = () => {
           <p>
             Please send your DMCA takedown notice to:
           </p>
-          <p><strong>Email:</strong> dmca@vidgrab.com</p>
+          <p><strong>Email:</strong> dmca@vidrivo.com</p>
           <p><strong>Subject:</strong> DMCA Takedown Notice</p>
         </section>
 
@@ -129,8 +129,8 @@ export const DMCA = () => {
           <p>
             For copyright-related inquiries, please contact us at:
           </p>
-          <p><strong>Email:</strong> dmca@vidgrab.com</p>
-          <p><strong>General Inquiries:</strong> support@vidgrab.com</p>
+          <p><strong>Email:</strong> dmca@vidrivo.com</p>
+          <p><strong>General Inquiries:</strong> support@vidrivo.com</p>
         </section>
       </div>
     </motion.div>

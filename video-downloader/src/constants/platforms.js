@@ -9,6 +9,7 @@ import redditIcon from '../assets/redlit.png'
 import twitchIcon from '../assets/twitch.png'
 import pinterestIcon from '../assets/pintrest.png'
 import dailymotionIcon from '../assets/daily-motion.png'
+import movieboxIcon from '../assets/moviebox.png'
 
 export const PLATFORMS = [
   { name: 'YouTube',     pattern: /youtube\.com|youtu\.be/i,      color: '#FF0000', icon: youtubeIcon },
@@ -21,6 +22,7 @@ export const PLATFORMS = [
   { name: 'Dailymotion', pattern: /dailymotion\.com/i,             color: '#0066DC', icon: dailymotionIcon },
   { name: 'Twitch',      pattern: /twitch\.tv/i,                   color: '#9146FF', icon: twitchIcon },
   { name: 'Pinterest',   pattern: /pinterest\.com/i,               color: '#E60023', icon: pinterestIcon },
+  { name: 'MovieBox',   pattern: /moviebox\.ph|moviebox\.com|movieboxpro\.com/i, color: '#FF6B00', icon: movieboxIcon },
 ]
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787/api'
@@ -35,6 +37,6 @@ export const DOWNLOAD_STATUS = {
 }
 
 export const STORAGE_KEYS = {
-  HISTORY: 'vidgrab-history',
-  THEME: 'vidgrab-theme',
+  HISTORY: 'vidrivo-history',
+  THEME: 'vidrivo-theme',
 }

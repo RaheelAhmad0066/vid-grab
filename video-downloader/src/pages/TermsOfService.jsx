@@ -19,7 +19,7 @@ export const TermsOfService = () => {
         <section>
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing or using VidGrab, you agree to be bound by these Terms of Service. If you 
+            By accessing or using VidRivo, you agree to be bound by these Terms of Service. If you 
             do not agree to these terms, please do not use our service.
           </p>
         </section>
@@ -27,7 +27,7 @@ export const TermsOfService = () => {
         <section>
           <h2>2. Description of Service</h2>
           <p>
-            VidGrab is a video downloader tool that allows users to download videos from various 
+            VidRivo is a video downloader tool that allows users to download videos from various 
             online platforms for personal, non-commercial use. Our service is provided "as is" without 
             any warranties.
           </p>
@@ -49,7 +49,7 @@ export const TermsOfService = () => {
         <section>
           <h2>4. Copyright and Intellectual Property</h2>
           <p>
-            VidGrab does not claim ownership of any content downloaded through our service. All 
+            VidRivo does not claim ownership of any content downloaded through our service. All 
             downloaded content remains the property of their respective owners. Users are responsible 
             for ensuring they have the right to download and use any content.
           </p>
@@ -73,7 +73,7 @@ export const TermsOfService = () => {
         <section>
           <h2>6. Disclaimer of Warranties</h2>
           <p>
-            VidGrab is provided "as is" without any warranties, express or implied. We do not guarantee:
+            VidRivo is provided "as is" without any warranties, express or implied. We do not guarantee:
           </p>
           <ul>
             <li>Uninterrupted or error-free service</li>
@@ -86,7 +86,7 @@ export const TermsOfService = () => {
         <section>
           <h2>7. Limitation of Liability</h2>
           <p>
-            VidGrab shall not be liable for any indirect, incidental, special, or consequential 
+            VidRivo shall not be liable for any indirect, incidental, special, or consequential 
             damages arising from the use of our service. Our total liability is limited to the amount 
             you paid, if any, for using our service.
           </p>
@@ -120,7 +120,7 @@ export const TermsOfService = () => {
           <h2>11. Governing Law</h2>
           <p>
             These Terms shall be governed by and construed in accordance with the laws of the jurisdiction 
-            in which VidGrab operates. Any disputes shall be resolved in the courts of that jurisdiction.
+            in which VidRivo operates. Any disputes shall be resolved in the courts of that jurisdiction.
           </p>
         </section>
 
@@ -137,7 +137,7 @@ export const TermsOfService = () => {
           <p>
             For questions about these Terms of Service, please contact us at:
           </p>
-          <p>Email: support@vidgrab.com</p>
+          <p>Email: support@vidrivo.com</p>
         </section>
       </div>
     </motion.div>

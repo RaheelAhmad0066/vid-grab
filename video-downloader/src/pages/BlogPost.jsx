@@ -48,7 +48,7 @@ export const BlogPost = () => {
         <h2>Technical Tips</h2>
         <p>For the best experience:</p>
         <ul>
-          <li>Use reliable download tools like VidGrab</li>
+          <li>Use reliable download tools like VidRivo</li>
           <li>Ensure sufficient storage space before downloading</li>
           <li>Check your internet connection for stable downloads</li>
           <li>Verify file integrity after download</li>
@@ -233,7 +233,7 @@ export const BlogPost = () => {
         </ul>
         
         <h2>How to Convert</h2>
-        <p>Using VidGrab for MP3 conversion:</p>
+        <p>Using VidRivo for MP3 conversion:</p>
         <ul>
           <li>Paste the video URL</li>
           <li>Select "Audio Only (MP3)" option</li>
@@ -260,7 +260,7 @@ export const BlogPost = () => {
         
         <h2>Use Trusted Tools</h2>
         <ul>
-          <li>Only use reputable download tools like VidGrab</li>
+          <li>Only use reputable download tools like VidRivo</li>
           <li>Avoid tools from unknown sources</li>
           <li>Read reviews before using new tools</li>
           <li>Check for malware and viruses regularly</li>
