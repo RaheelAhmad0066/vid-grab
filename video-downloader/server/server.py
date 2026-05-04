@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import html as html_module
 import urllib.request
 from flask import Flask, request, jsonify, send_file
@@ -35,12 +36,25 @@ DOWNLOAD_DIR = tempfile.mkdtemp()
 
 
 MOVIEBOX_DOMAINS = re.compile(r'moviebox\.ph|moviebox\.com|movieboxpro\.com', re.IGNORECASE)
+SNAPCHAT_DOMAINS = re.compile(r'snapchat\.com', re.IGNORECASE)
+
 BROWSER_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.5',
 }
 
+# Snapchat serves better with a mobile user-agent
+SNAPCHAT_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Referer': 'https://www.snapchat.com/',
+    'Origin': 'https://www.snapchat.com',
+}
+
+
+# ── MovieBox scraper ────────────────────────────────────────────────────────
 
 def fetch_moviebox_info(url):
     """Scrape MovieBox page and return video metadata + direct mp4 URL."""
@@ -49,7 +63,6 @@ def fetch_moviebox_info(url):
         page = resp.read().decode('utf-8', errors='replace')
         final_url = resp.geturl()
 
-    # If we got a short link that redirected, fetch the resolved page
     if final_url != url and 'moviebox' in final_url:
         req2 = urllib.request.Request(final_url, headers=BROWSER_HEADERS)
         with urllib.request.urlopen(req2, timeout=15, context=ssl_ctx) as resp2:
@@ -57,7 +70,6 @@ def fetch_moviebox_info(url):
 
     title_m = re.search(r'<title[^>]*>(.*?)</title>', page, re.DOTALL)
     title = html_module.unescape(title_m.group(1).strip()) if title_m else 'MovieBox Video'
-    # Strip " - MovieBox" suffix if present
     title = re.sub(r'\s*[-|]\s*MovieBox.*$', '', title, flags=re.IGNORECASE).strip()
 
     thumb_m = re.search(r'(https?://[^\s"<>]+\.(?:jpg|jpeg|png|webp)[^\s"<>]*)', page)
@@ -87,6 +99,106 @@ def fetch_moviebox_info(url):
     }
 
 
+# ── Snapchat scraper ────────────────────────────────────────────────────────
+
+def _parse_iso_duration(dur_str):
+    """Parse ISO 8601 duration string like PT1M30S → '1:30'."""
+    m = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', dur_str or '')
+    if not m:
+        return '0:00'
+    hours = int(m.group(1) or 0)
+    mins  = int(m.group(2) or 0) + hours * 60
+    secs  = int(m.group(3) or 0)
+    return f'{mins}:{secs:02d}'
+
+
+def _og(page, prop):
+    """Extract an og: meta tag value (handles both attribute orderings)."""
+    pattern = (
+        rf'<meta[^>]+property=["\']og:{prop}["\'][^>]+content=["\']([^"\']+)["\']'
+        rf'|<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:{prop}["\']'
+    )
+    m = re.search(pattern, page, re.IGNORECASE)
+    if m:
+        return html_module.unescape(m.group(1) or m.group(2))
+    return ''
+
+
+def fetch_snapchat_info(url):
+    """
+    Scrape a Snapchat Spotlight / Story page and return video metadata.
+    Tries JSON-LD structured data first, then falls back to og: meta tags and
+    raw .mp4 URL extraction.
+    """
+    req = urllib.request.Request(url, headers=SNAPCHAT_HEADERS)
+    with urllib.request.urlopen(req, timeout=20, context=ssl_ctx) as resp:
+        page = resp.read().decode('utf-8', errors='replace')
+
+    title     = 'Snapchat Video'
+    thumbnail = ''
+    video_url = None
+    duration  = '0:00'
+    uploader  = 'Snapchat'
+
+    # ── 1. JSON-LD structured data ──────────────────────────────────────────
+    for jld_m in re.finditer(
+        r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+        page, re.DOTALL | re.IGNORECASE
+    ):
+        try:
+            ld = json.loads(jld_m.group(1))
+            if isinstance(ld, list):
+                ld = ld[0]
+            content_url = ld.get('contentUrl') or ld.get('embedUrl')
+            if content_url:
+                video_url = content_url
+                title     = ld.get('name', title)
+                thumb     = ld.get('thumbnailUrl', '')
+                thumbnail = (thumb[0] if isinstance(thumb, list) and thumb else thumb) or thumbnail
+                duration  = _parse_iso_duration(ld.get('duration', ''))
+                uploader  = ld.get('author', {}).get('name', uploader) if isinstance(ld.get('author'), dict) else uploader
+                break
+        except Exception:
+            continue
+
+    # ── 2. og:video meta tags ───────────────────────────────────────────────
+    if not video_url:
+        video_url = _og(page, 'video:url') or _og(page, 'video')
+
+    # ── 3. Raw .mp4 in page source ──────────────────────────────────────────
+    if not video_url:
+        mp4_m = re.search(r'(https?://[^\s"\'<>]+\.mp4[^\s"\'<>]*)', page)
+        if mp4_m:
+            video_url = mp4_m.group(1)
+
+    if not video_url:
+        raise ValueError(
+            'Could not extract video from this Snapchat link. '
+            'Only public Spotlight / Story videos are supported.'
+        )
+
+    # Fill remaining metadata from og: tags if still missing
+    if title == 'Snapchat Video':
+        title = _og(page, 'title') or title
+    if not thumbnail:
+        thumbnail = _og(page, 'image') or ''
+
+    return {
+        'title':      title,
+        'thumbnail':  thumbnail,
+        'duration':   duration,
+        'uploader':   uploader,
+        'view_count': 0,
+        'video_url':  video_url,
+        'formats': [
+            {'format_id': 'direct_snap', 'label': 'Best Quality (MP4)', 'height': 1080, 'ext': 'mp4', 'filesize': None},
+            {'format_id': 'bestaudio/best', 'label': 'Audio Only (MP3)', 'height': 0, 'ext': 'mp3', 'filesize': None},
+        ],
+    }
+
+
+# ── Progress hook ───────────────────────────────────────────────────────────
+
 def progress_hook(job_id):
     def hook(d):
         if d['status'] == 'downloading':
@@ -110,20 +222,110 @@ def progress_hook(job_id):
     return hook
 
 
+# ── Helper: direct URL download (used by MovieBox + Snapchat) ───────────────
+
+def direct_download(job_id, video_url, title, ext, request_headers):
+    """Download a direct video URL to DOWNLOAD_DIR, updating progress_store."""
+    filepath = os.path.join(DOWNLOAD_DIR, f'{job_id}.{ext}')
+    progress_store[job_id] = {'status': 'downloading', 'percent': 0}
+    try:
+        req = urllib.request.Request(video_url, headers=request_headers)
+        with urllib.request.urlopen(req, timeout=120, context=ssl_ctx) as resp:
+            total = int(resp.headers.get('Content-Length', 0))
+            downloaded = 0
+            with open(filepath, 'wb') as f:
+                while True:
+                    chunk = resp.read(65536)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    percent = int((downloaded / total) * 100) if total else 0
+                    progress_store[job_id] = {'status': 'downloading', 'percent': percent}
+        progress_store[job_id] = {
+            'status': 'finished', 'percent': 100,
+            'filepath': filepath, 'title': title, 'ext': ext,
+        }
+    except Exception as e:
+        progress_store[job_id] = {'status': 'error', 'percent': 0, 'error': str(e)}
+
+
+# ── Routes ──────────────────────────────────────────────────────────────────
+
 @app.route('/api/info', methods=['POST'])
 def get_info():
-    """Fetch video metadata + thumbnail URL"""
+    """Fetch video metadata + available formats."""
     data = request.get_json()
-    url = data.get('url', '').strip()
+    url  = data.get('url', '').strip()
     if not url:
         return jsonify({'error': 'URL is required'}), 400
 
+    # ── MovieBox ────────────────────────────────────────────────────────────
+    if MOVIEBOX_DOMAINS.search(url):
+        try:
+            return jsonify(fetch_moviebox_info(url))
+        except Exception as e:
+            return jsonify({'error': f'Failed to fetch MovieBox video: {str(e)}'}), 400
+
+    # ── Snapchat ────────────────────────────────────────────────────────────
+    if SNAPCHAT_DOMAINS.search(url):
+        # Try yt-dlp first (handles some Spotlight URLs natively)
+        snap_ydl_opts = {
+            'quiet': True,
+            'no_warnings': True,
+            'skip_download': True,
+            'noplaylist': True,
+            'socket_timeout': 20,
+            'retries': 2,
+            'http_headers': SNAPCHAT_HEADERS,
+        }
+        try:
+            with yt_dlp.YoutubeDL(snap_ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+
+            formats_raw = info.get('formats', [])
+            seen, formats = set(), []
+            for f in reversed(formats_raw):
+                height = f.get('height')
+                ext    = f.get('ext', '')
+                if f.get('vcodec', 'none') != 'none' and height and height not in seen:
+                    seen.add(height)
+                    formats.append({
+                        'format_id': f['format_id'],
+                        'label':     f'{height}p {ext.upper()}',
+                        'height':    height,
+                        'ext':       ext,
+                        'filesize':  f.get('filesize') or f.get('filesize_approx'),
+                    })
+            formats = sorted([f for f in formats if f['height'] > 0], key=lambda x: x['height'], reverse=True)
+            formats.append({'format_id': 'bestaudio/best', 'label': 'Audio Only (MP3)', 'height': 0, 'ext': 'mp3', 'filesize': None})
+            formats = formats[:5] + [formats[-1]]
+
+            duration_secs = info.get('duration', 0) or 0
+            return jsonify({
+                'title':      info.get('title', 'Snapchat Video'),
+                'thumbnail':  info.get('thumbnail', ''),
+                'duration':   f'{int(duration_secs // 60)}:{int(duration_secs % 60):02d}',
+                'uploader':   info.get('uploader', 'Snapchat'),
+                'view_count': info.get('view_count', 0),
+                'formats':    formats,
+            })
+        except Exception:
+            pass  # Fall through to scraper
+
+        # Scraper fallback
+        try:
+            return jsonify(fetch_snapchat_info(url))
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+
+    # ── All other platforms via yt-dlp ──────────────────────────────────────
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
         'skip_download': True,
         'noplaylist': True,
-        'nocheckcertificate': False,  # certifi handles this
+        'nocheckcertificate': False,
         'extract_flat': False,
         'socket_timeout': 30,
         'retries': 3,
@@ -132,53 +334,32 @@ def get_info():
         'file_access_retries': 3,
         'http_chunk_size': 16384,
         'extractor_args': {
-            'instagram': {
-                'skip_download': True,
-                'extract_flat': False,
-            }
+            'instagram': {'skip_download': True, 'extract_flat': False}
         }
     }
-
-    # MovieBox: scrape directly — yt-dlp has no extractor for it
-    if MOVIEBOX_DOMAINS.search(url):
-        try:
-            info = fetch_moviebox_info(url)
-            return jsonify(info)
-        except Exception as e:
-            return jsonify({'error': f'Failed to fetch MovieBox video: {str(e)}'}), 400
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
 
-        # Build formats list
         formats_raw = info.get('formats', [])
-        seen = set()
-        formats = []
+        seen, formats = set(), []
         for f in reversed(formats_raw):
             height = f.get('height')
-            ext = f.get('ext', '')
-            vcodec = f.get('vcodec', 'none')
-            acodec = f.get('acodec', 'none')
-
-            if vcodec != 'none' and height and height not in seen:
+            ext    = f.get('ext', '')
+            if f.get('vcodec', 'none') != 'none' and height and height not in seen:
                 seen.add(height)
                 formats.append({
                     'format_id': f['format_id'],
-                    'label': f'{height}p {ext.upper()}',
-                    'height': height,
-                    'ext': ext,
-                    'filesize': f.get('filesize') or f.get('filesize_approx'),
+                    'label':     f'{height}p {ext.upper()}',
+                    'height':    height,
+                    'ext':       ext,
+                    'filesize':  f.get('filesize') or f.get('filesize_approx'),
                 })
 
-        # Add audio-only option
         formats.append({'format_id': 'bestaudio/best', 'label': 'Audio Only (MP3)', 'height': 0, 'ext': 'mp3', 'filesize': None})
-
-        # Sort by height descending
         formats = sorted([f for f in formats if f['height'] > 0], key=lambda x: x['height'], reverse=True) + \
                   [f for f in formats if f['height'] == 0]
-
-        # Limit to top 5 video + audio
         formats = formats[:5] + [formats[-1]] if len(formats) > 1 else formats
 
         duration_secs = info.get('duration', 0)
@@ -186,19 +367,18 @@ def get_info():
         secs = int(duration_secs % 60)
 
         return jsonify({
-            'title': info.get('title', 'Unknown Title'),
-            'thumbnail': info.get('thumbnail', ''),
-            'duration': f'{mins}:{secs:02d}',
-            'uploader': info.get('uploader', ''),
+            'title':      info.get('title', 'Unknown Title'),
+            'thumbnail':  info.get('thumbnail', ''),
+            'duration':   f'{mins}:{secs:02d}',
+            'uploader':   info.get('uploader', ''),
             'view_count': info.get('view_count', 0),
-            'formats': formats,
+            'formats':    formats,
         })
 
     except yt_dlp.utils.DownloadError as e:
         error_msg = str(e).replace('ERROR: ', '')
-        # Handle specific Instagram rate limit error
         if 'rate-limit' in error_msg.lower() or 'login required' in error_msg.lower():
-            return jsonify({'error': 'Instagram is temporarily limiting requests. Please try again in a few minutes or use a different video.'}), 429
+            return jsonify({'error': 'Instagram is temporarily limiting requests. Please try again in a few minutes.'}), 429
         return jsonify({'error': error_msg}), 400
     except Exception as e:
         return jsonify({'error': f'Failed to fetch video info: {str(e)}'}), 500
@@ -206,11 +386,11 @@ def get_info():
 
 @app.route('/api/download', methods=['POST'])
 def start_download():
-    """Start async download, return job_id"""
-    data = request.get_json()
-    url = data.get('url', '').strip()
+    """Start async download, return job_id."""
+    data      = request.get_json()
+    url       = data.get('url', '').strip()
     format_id = data.get('format_id', 'bestvideo+bestaudio/best')
-    is_audio = data.get('is_audio', False)
+    is_audio  = data.get('is_audio', False)
 
     if not url:
         return jsonify({'error': 'URL is required'}), 400
@@ -218,42 +398,84 @@ def start_download():
     job_id = str(uuid.uuid4())
     progress_store[job_id] = {'status': 'starting', 'percent': 0}
 
-    def run_moviebox_download():
-        try:
-            mb_info = fetch_moviebox_info(url)
-            video_url = mb_info['video_url']
-            ext = 'mp4'
-            filepath = os.path.join(DOWNLOAD_DIR, f'{job_id}.{ext}')
-            progress_store[job_id] = {'status': 'downloading', 'percent': 0}
-
-            req = urllib.request.Request(video_url, headers=BROWSER_HEADERS)
-            with urllib.request.urlopen(req, timeout=60, context=ssl_ctx) as resp:
-                total = int(resp.headers.get('Content-Length', 0))
-                downloaded = 0
-                with open(filepath, 'wb') as f:
-                    while True:
-                        chunk = resp.read(65536)
-                        if not chunk:
-                            break
-                        f.write(chunk)
-                        downloaded += len(chunk)
-                        percent = int((downloaded / total) * 100) if total else 0
-                        progress_store[job_id] = {'status': 'downloading', 'percent': percent}
-
-            progress_store[job_id] = {
-                'status': 'finished', 'percent': 100,
-                'filepath': filepath,
-                'title': mb_info['title'],
-                'ext': ext,
-            }
-        except Exception as e:
-            progress_store[job_id] = {'status': 'error', 'percent': 0, 'error': str(e)}
-
+    # ── MovieBox ────────────────────────────────────────────────────────────
     if MOVIEBOX_DOMAINS.search(url):
-        thread = threading.Thread(target=run_moviebox_download, daemon=True)
-        thread.start()
+        def run_moviebox():
+            try:
+                mb_info   = fetch_moviebox_info(url)
+                direct_download(job_id, mb_info['video_url'], mb_info['title'], 'mp4', BROWSER_HEADERS)
+                if progress_store[job_id].get('status') == 'finished':
+                    progress_store[job_id]['title'] = mb_info['title']
+                    progress_store[job_id]['ext']   = 'mp4'
+            except Exception as e:
+                progress_store[job_id] = {'status': 'error', 'percent': 0, 'error': str(e)}
+        threading.Thread(target=run_moviebox, daemon=True).start()
         return jsonify({'job_id': job_id})
 
+    # ── Snapchat ────────────────────────────────────────────────────────────
+    if SNAPCHAT_DOMAINS.search(url):
+        def run_snapchat():
+            # When format came from our scraper it's 'direct_snap' — always do direct download.
+            # When format came from yt-dlp, try yt-dlp first and fall back.
+            if format_id == 'direct_snap' or format_id == 'bestaudio/best':
+                try:
+                    snap_info = fetch_snapchat_info(url)
+                    if is_audio:
+                        # yt-dlp handles audio extraction; fall through to yt-dlp path
+                        raise Exception('audio: use yt-dlp')
+                    direct_download(job_id, snap_info['video_url'], snap_info['title'], 'mp4', SNAPCHAT_HEADERS)
+                    return
+                except Exception as e:
+                    if 'audio: use yt-dlp' not in str(e):
+                        progress_store[job_id] = {'status': 'error', 'percent': 0, 'error': str(e)}
+                        return
+
+            # yt-dlp path (for audio or native yt-dlp format IDs)
+            output_path = os.path.join(DOWNLOAD_DIR, f'{job_id}.%(ext)s')
+            snap_dl_opts = {
+                'format':             'bestaudio/best' if is_audio else format_id,
+                'outtmpl':            output_path,
+                'quiet':              True,
+                'no_warnings':        True,
+                'noplaylist':         True,
+                'merge_output_format':'mp4',
+                'http_headers':       SNAPCHAT_HEADERS,
+                'progress_hooks':     [progress_hook(job_id)],
+            }
+            if is_audio:
+                snap_dl_opts['postprocessors'] = [{
+                    'key': 'FFmpegExtractAudio',
+                    'preferredcodec': 'mp3',
+                    'preferredquality': '192',
+                }]
+            try:
+                with yt_dlp.YoutubeDL(snap_dl_opts) as ydl:
+                    info = ydl.extract_info(url, download=True)
+                ext      = 'mp3' if is_audio else 'mp4'
+                filepath = os.path.join(DOWNLOAD_DIR, f'{job_id}.{ext}')
+                if not os.path.exists(filepath):
+                    for f in os.listdir(DOWNLOAD_DIR):
+                        if f.startswith(job_id):
+                            filepath = os.path.join(DOWNLOAD_DIR, f)
+                            break
+                progress_store[job_id] = {
+                    'status': 'finished', 'percent': 100,
+                    'filepath': filepath,
+                    'title': info.get('title', 'Snapchat Video'),
+                    'ext': ext,
+                }
+            except Exception:
+                # Last resort: direct download without audio extraction
+                try:
+                    snap_info = fetch_snapchat_info(url)
+                    direct_download(job_id, snap_info['video_url'], snap_info['title'], 'mp4', SNAPCHAT_HEADERS)
+                except Exception as e2:
+                    progress_store[job_id] = {'status': 'error', 'percent': 0, 'error': str(e2)}
+
+        threading.Thread(target=run_snapchat, daemon=True).start()
+        return jsonify({'job_id': job_id})
+
+    # ── All other platforms ─────────────────────────────────────────────────
     def run_download():
         output_path = os.path.join(DOWNLOAD_DIR, f'{job_id}.%(ext)s')
 
@@ -273,7 +495,7 @@ def start_download():
             }
         else:
             ydl_opts = {
-                'format': format_id if format_id != 'bestvideo+bestaudio/best' else 'bestvideo+bestaudio/best',
+                'format': format_id,
                 'outtmpl': output_path,
                 'quiet': True,
                 'no_warnings': True,
@@ -285,48 +507,42 @@ def start_download():
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=True)
-                # Find the actual output file
-                ext = 'mp3' if is_audio else 'mp4'
-                filepath = os.path.join(DOWNLOAD_DIR, f'{job_id}.{ext}')
-                # Try to find the file if extension differs
-                if not os.path.exists(filepath):
-                    for f in os.listdir(DOWNLOAD_DIR):
-                        if f.startswith(job_id):
-                            filepath = os.path.join(DOWNLOAD_DIR, f)
-                            break
-                progress_store[job_id] = {
-                    'status': 'finished',
-                    'percent': 100,
-                    'filepath': filepath,
-                    'title': info.get('title', 'video'),
-                    'ext': ext,
-                }
+            ext      = 'mp3' if is_audio else 'mp4'
+            filepath = os.path.join(DOWNLOAD_DIR, f'{job_id}.{ext}')
+            if not os.path.exists(filepath):
+                for f in os.listdir(DOWNLOAD_DIR):
+                    if f.startswith(job_id):
+                        filepath = os.path.join(DOWNLOAD_DIR, f)
+                        break
+            progress_store[job_id] = {
+                'status': 'finished', 'percent': 100,
+                'filepath': filepath,
+                'title': info.get('title', 'video'),
+                'ext': ext,
+            }
         except Exception as e:
             progress_store[job_id] = {'status': 'error', 'percent': 0, 'error': str(e)}
 
-    thread = threading.Thread(target=run_download, daemon=True)
-    thread.start()
-
+    threading.Thread(target=run_download, daemon=True).start()
     return jsonify({'job_id': job_id})
 
 
 @app.route('/api/progress/<job_id>', methods=['GET'])
 def get_progress(job_id):
-    """Poll download progress"""
+    """Poll download progress."""
     info = progress_store.get(job_id, {'status': 'not_found', 'percent': 0})
-    # Don't expose filepath in progress response
     return jsonify({
-        'status': info.get('status'),
+        'status':  info.get('status'),
         'percent': info.get('percent', 0),
-        'speed': info.get('speed', ''),
-        'eta': info.get('eta', ''),
-        'error': info.get('error', ''),
+        'speed':   info.get('speed', ''),
+        'eta':     info.get('eta', ''),
+        'error':   info.get('error', ''),
     })
 
 
 @app.route('/api/file/<job_id>', methods=['GET'])
 def serve_file(job_id):
-    """Serve the downloaded file"""
+    """Serve the downloaded file."""
     info = progress_store.get(job_id)
     if not info or info.get('status') != 'finished':
         return jsonify({'error': 'File not ready'}), 404
@@ -335,9 +551,9 @@ def serve_file(job_id):
     if not filepath or not os.path.exists(filepath):
         return jsonify({'error': 'File not found'}), 404
 
-    title = info.get('title', 'video')
-    ext = info.get('ext', 'mp4')
-    safe_title = ''.join(c for c in title if c.isalnum() or c in ' -_')[:60].strip()
+    title       = info.get('title', 'video')
+    ext         = info.get('ext', 'mp4')
+    safe_title  = ''.join(c for c in title if c.isalnum() or c in ' -_')[:60].strip()
     download_name = f'{safe_title}.{ext}'
 
     return send_file(

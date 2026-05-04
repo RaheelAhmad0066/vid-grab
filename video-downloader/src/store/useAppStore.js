@@ -5,7 +5,7 @@ export const useAppStore = create((set, get) => ({
   // UI State
   darkMode: true,
   showSettings: false,
-  
+
   // Download State
   url: '',
   status: DOWNLOAD_STATUS.IDLE,
@@ -17,12 +17,35 @@ export const useAppStore = create((set, get) => ({
   eta: '',
   jobId: null,
   errorMsg: '',
-  
+
+  // Settings
+  autoDownload: false,
+
+  // Batch Queue
+  batchQueue: [],
+
   // History
   history: [],
   
   // Actions
   setUrl: (url) => set({ url }),
+
+  toggleAutoDownload: () => {
+    const newVal = !get().autoDownload
+    set({ autoDownload: newVal })
+    localStorage.setItem('vidrivo-auto-download', newVal ? 'true' : 'false')
+  },
+
+  // Batch actions
+  addToBatch: (urls) => {
+    const items = urls.map(url => ({ id: Date.now() + Math.random(), url: url.trim(), status: 'idle', progress: 0, title: '', error: '', jobId: null }))
+    set({ batchQueue: [...get().batchQueue, ...items] })
+  },
+  removeFromBatch: (id) => set({ batchQueue: get().batchQueue.filter(i => i.id !== id) }),
+  clearBatch: () => set({ batchQueue: [] }),
+  updateBatchItem: (id, updates) => set({
+    batchQueue: get().batchQueue.map(i => i.id === id ? { ...i, ...updates } : i),
+  }),
   
   setStatus: (status) => set({ status }),
   
@@ -71,12 +94,10 @@ export const useAppStore = create((set, get) => ({
   loadHistory: () => {
     const saved = localStorage.getItem(STORAGE_KEYS.HISTORY)
     if (saved) {
-      try {
-        set({ history: JSON.parse(saved) })
-      } catch (e) {
-        console.error('Failed to load history', e)
-      }
+      try { set({ history: JSON.parse(saved) }) } catch (e) { console.error('Failed to load history', e) }
     }
+    const auto = localStorage.getItem('vidrivo-auto-download')
+    if (auto !== null) set({ autoDownload: auto === 'true' })
   },
   
   loadTheme: () => {

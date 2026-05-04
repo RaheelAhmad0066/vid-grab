@@ -9,7 +9,8 @@ import redditIcon from '../assets/redlit.png'
 import twitchIcon from '../assets/twitch.png'
 import pinterestIcon from '../assets/pintrest.png'
 import dailymotionIcon from '../assets/daily-motion.png'
-import movieboxIcon from '../assets/moviebox.png'
+import movieboxIcon from '../assets/movie.png'
+import snapchatIcon from '../assets/snapchat.png'
 
 export const PLATFORMS = [
   { name: 'YouTube',     pattern: /youtube\.com|youtu\.be/i,      color: '#FF0000', icon: youtubeIcon },
@@ -23,6 +24,7 @@ export const PLATFORMS = [
   { name: 'Twitch',      pattern: /twitch\.tv/i,                   color: '#9146FF', icon: twitchIcon },
   { name: 'Pinterest',   pattern: /pinterest\.com/i,               color: '#E60023', icon: pinterestIcon },
   { name: 'MovieBox',   pattern: /moviebox\.ph|moviebox\.com|movieboxpro\.com/i, color: '#FF6B00', icon: movieboxIcon },
+  { name: 'Snapchat',  pattern: /snapchat\.com/i,                              color: '#FFFC00', icon: snapchatIcon },
 ]
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787/api'

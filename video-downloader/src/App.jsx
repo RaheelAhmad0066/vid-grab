@@ -35,6 +35,7 @@ import { BlogPost } from './pages/BlogPost'
 
 // Utils
 import { detectPlatform } from './utils/platform'
+import { isValidUrl } from './utils/validators'
 import { DOWNLOAD_STATUS } from './constants/platforms'
 import logo from './assets/logo.png'
 import lineLeft from './assets/ine_left.svg'
@@ -54,6 +55,7 @@ export default function App() {
     errorMsg,
     history,
     darkMode,
+    autoDownload,
     setUrl,
     setSelectedFormat,
     removeFromHistory,
@@ -83,6 +85,23 @@ export default function App() {
     loadHistory()
     loadTheme()
   }, [loadHistory, loadTheme])
+
+  // Auto-analyze when URL is pasted and auto-download is on
+  useEffect(() => {
+    if (!autoDownload) return
+    if (!url.trim() || !isValidUrl(url.trim())) return
+    if (status !== DOWNLOAD_STATUS.IDLE) return
+    const timer = setTimeout(() => analyzeVideo(), 700)
+    return () => clearTimeout(timer)
+  }, [url, autoDownload])
+
+  // Auto-start download once analysis is ready
+  useEffect(() => {
+    if (!autoDownload) return
+    if (status !== DOWNLOAD_STATUS.READY) return
+    if (!selectedFormat) return
+    downloadVideo()
+  }, [status, autoDownload, selectedFormat])
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
