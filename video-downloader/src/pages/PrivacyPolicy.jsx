@@ -19,7 +19,7 @@ export const PrivacyPolicy = () => {
         <section>
           <h2>1. Introduction</h2>
           <p>
-            VidRivo ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy 
+            Vidoon ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy 
             explains how we collect, use, and safeguard your information when you use our video downloader service.
           </p>
         </section>

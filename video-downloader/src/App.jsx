@@ -173,13 +173,13 @@ export default function App() {
           >
             <motion.img 
               src={logo} 
-              alt="VidRivo Logo" 
+              alt="Vidoon Logo" 
               className="logo-image"
               initial={{ rotate: -10, opacity: 0 }}
               animate={{ rotate: 0, opacity: 1 }}
               transition={{ duration: 0.8, type: "spring" }}
             />
-            <span className="logo-text">VidRivo</span>
+            <span className="logo-text">Vidoon</span>
           </motion.div>
           <motion.p 
             className="tagline"
@@ -587,7 +587,7 @@ export default function App() {
         <footer className="footer">
           <div className="footer-content">
             <p className="footer-disclaimer">
-              <strong>Copyright Disclaimer:</strong> VidRivo is a tool for personal, non-commercial use only. 
+              <strong>Copyright Disclaimer:</strong> Vidoon is a tool for personal, non-commercial use only. 
               Users are responsible for ensuring their use of downloaded content complies with applicable laws 
               and platform terms of service. We do not host any content on our servers.
             </p>
@@ -601,7 +601,7 @@ export default function App() {
               <a href="/contact">Contact</a>
             </div>
             <p className="footer-copy">
-              © {new Date().getFullYear()} VidRivo. All rights reserved.
+              © {new Date().getFullYear()} Vidoon. All rights reserved.
             </p>
           </div>
         </footer>

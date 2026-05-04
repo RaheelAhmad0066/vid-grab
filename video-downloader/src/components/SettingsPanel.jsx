@@ -180,7 +180,7 @@ export const SettingsPanel = ({ onSaveFile }) => {
 
               {/* About */}
               <div className="settings-section">
-                <h3><Info size={20} /> About VidRivo</h3>
+                <h3><Info size={20} /> About Vidoon</h3>
                 <p className="about-text">
                   Version 1.0.0<br />
                   A modern video downloader supporting 10+ platforms<br />

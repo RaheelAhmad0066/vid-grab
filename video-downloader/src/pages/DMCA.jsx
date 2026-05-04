@@ -19,7 +19,7 @@ export const DMCA = () => {
         <section>
           <h2>1. Copyright Infringement Policy</h2>
           <p>
-            VidRivo respects the intellectual property rights of others and expects users of our service 
+            Vidoon respects the intellectual property rights of others and expects users of our service 
             to do the same. We comply with the Digital Millennium Copyright Act (DMCA) and other 
             applicable copyright laws.
           </p>
@@ -28,7 +28,7 @@ export const DMCA = () => {
         <section>
           <h2>2. Our Position on Copyright</h2>
           <p>
-            VidRivo is a tool designed to help users download videos for personal, non-commercial use. 
+            Vidoon is a tool designed to help users download videos for personal, non-commercial use. 
             We do not host any content on our servers. All content is downloaded from third-party platforms.
           </p>
           <p>
