@@ -14,110 +14,101 @@ export const PrivacyPolicy = () => {
     >
       <div className="legal-container">
         <h1>Privacy Policy</h1>
-        <p className="last-updated">Last Updated: {new Date().toLocaleDateString()}</p>
+        <p className="last-updated">Last Updated: May 5, 2026</p>
 
         <section>
           <h2>1. Introduction</h2>
           <p>
-            Vidoon ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy 
-            explains how we collect, use, and safeguard your information when you use our video downloader service.
+            Welcome to Vidoon. We value your privacy and are committed to protecting your personal data. 
+            This Privacy Policy will inform you as to how we look after your personal data when you visit 
+            our website and tell you about your privacy rights and how the law protects you.
           </p>
         </section>
 
         <section>
-          <h2>2. Information We Collect</h2>
-          <h3>2.1 Information You Provide</h3>
+          <h2>2. Advertising and Cookies (AdSense Compliance)</h2>
+          <p>
+            Vidoon uses third-party vendors, including Google, to serve ads when you visit our website. 
+            These companies may use information about your visits to this and other websites in order to 
+            provide advertisements about goods and services of interest to you.
+          </p>
           <ul>
-            <li>Video URLs that you submit for download</li>
-            <li>Contact information if you reach out to us (email, name)</li>
-          </ul>
-
-          <h3>2.2 Automatically Collected Information</h3>
-          <ul>
-            <li>IP address and browser type</li>
-            <li>Device information and operating system</li>
-            <li>Usage data and analytics</li>
-            <li>Cookies and similar tracking technologies</li>
-          </ul>
-        </section>
-
-        <section>
-          <h2>3. How We Use Your Information</h2>
-          <ul>
-            <li>To provide and improve our video download service</li>
-            <li>To analyze usage patterns and optimize performance</li>
-            <li>To respond to your inquiries and support requests</li>
-            <li>To ensure security and prevent abuse</li>
-            <li>To comply with legal obligations</li>
+            <li>
+              <strong>Google's Use of Cookies:</strong> Google, as a third-party vendor, uses cookies 
+              to serve ads on your site. Google's use of advertising cookies enables it and its partners 
+              to serve ads to your users based on their visit to your sites and/or other sites on the Internet.
+            </li>
+            <li>
+              <strong>Opt-Out:</strong> Users may opt out of personalized advertising by visiting 
+              <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer"> Google Ads Settings</a>. 
+              Alternatively, you can opt out of a third-party vendor's use of cookies for personalized 
+              advertising by visiting <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer">www.aboutads.info</a>.
+            </li>
           </ul>
         </section>
 
         <section>
-          <h2>4. Data Storage and Retention</h2>
+          <h2>3. Information We Collect</h2>
           <p>
-            Downloaded files are stored temporarily on our servers and are automatically deleted after 
-            a short period. We do not permanently store your downloaded videos. User data is retained 
-            only as long as necessary for the purposes outlined in this policy.
+            We collect information that you provide directly to us, such as when you use our video 
+            download tool or contact us for support. This may include:
           </p>
-        </section>
-
-        <section>
-          <h2>5. Cookies and Tracking</h2>
-          <p>
-            We use cookies to enhance your experience, remember your preferences, and analyze site traffic. 
-            You can control cookie settings through your browser preferences.
-          </p>
-        </section>
-
-        <section>
-          <h2>6. Third-Party Services</h2>
-          <p>
-            We may use third-party services for analytics, hosting, and other functionality. These services 
-            may have their own privacy policies. We are not responsible for the practices of third-party services.
-          </p>
-        </section>
-
-        <section>
-          <h2>7. Data Security</h2>
-          <p>
-            We implement appropriate security measures to protect your information. However, no method of 
-            transmission over the internet is 100% secure. We cannot guarantee absolute security.
-          </p>
-        </section>
-
-        <section>
-          <h2>8. Your Rights</h2>
-          <p>You have the right to:</p>
           <ul>
-            <li>Access your personal information</li>
-            <li>Request deletion of your data</li>
-            <li>Opt-out of certain data collection</li>
-            <li>Withdraw consent at any time</li>
+            <li>Video URLs submitted for processing</li>
+            <li>Usage data and technical logs</li>
+            <li>Communication history (if you contact us)</li>
           </ul>
         </section>
 
         <section>
-          <h2>9. Children's Privacy</h2>
+          <h2>4. Cookies and Web Beacons</h2>
           <p>
-            Our service is not intended for children under 13. We do not knowingly collect personal 
-            information from children under 13.
+            We use "cookies" to collect information and improve our Services. A cookie is a small data file 
+            that we transfer to your device. We may use "persistent cookies" to save your registration ID 
+            and login password for future logins to the Service. We may use "session ID cookies" to enable 
+            certain features of the Service, to better understand how you interact with the Service and to 
+            monitor aggregate usage and web traffic routing on the Service.
           </p>
         </section>
 
         <section>
-          <h2>10. Changes to This Policy</h2>
+          <h2>5. Third Party Privacy Policies</h2>
           <p>
-            We may update this Privacy Policy from time to time. We will notify you of significant changes 
-            by posting the new policy on our website.
+            Vidoon's Privacy Policy does not apply to other advertisers or websites. Thus, we are advising 
+            you to consult the respective Privacy Policies of these third-party ad servers for more 
+            detailed information. It may include their practices and instructions about how to opt-out 
+            of certain options.
           </p>
         </section>
 
         <section>
-          <h2>11. Contact Us</h2>
+          <h2>6. Children's Information</h2>
           <p>
-            If you have questions about this Privacy Policy, please contact us at:
+            Another part of our priority is adding protection for children while using the internet. 
+            We encourage parents and guardians to observe, participate in, and/or monitor and guide 
+            their online activity.
           </p>
-          <p>Email: support@vidrivo.com</p>
+          <p>
+            Vidoon does not knowingly collect any Personal Identifiable Information from children under 
+            the age of 13. If you think that your child provided this kind of information on our website, 
+            we strongly encourage you to contact us immediately and we will do our best efforts to 
+            promptly remove such information from our records.
+          </p>
+        </section>
+
+        <section>
+          <h2>7. Consent</h2>
+          <p>
+            By using our website, you hereby consent to our Privacy Policy and agree to its Terms and Conditions.
+          </p>
+        </section>
+
+        <section>
+          <h2>8. Contact Us</h2>
+          <p>
+            If you have any questions or suggestions about our Privacy Policy, do not hesitate to 
+            contact us at support@vidrivo.com.
+          </p>
         </section>
       </div>
     </motion.div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Home, Info, HelpCircle, FileText, Shield, Mail } from 'lucide-react'
+import { Menu, X, Home, Info, HelpCircle, FileText, Shield, Mail, Download } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAppStore } from '../store/useAppStore'
 
@@ -18,6 +18,10 @@ export const Navigation = () => {
     { path: '/terms', label: 'Terms of Service', icon: Shield },
     { path: '/dmca', label: 'DMCA', icon: Shield },
     { path: '/contact', label: 'Contact', icon: Mail },
+    { path: '/youtube-downloader', label: 'YouTube Downloader', icon: Download },
+    { path: '/instagram-downloader', label: 'Instagram Downloader', icon: Download },
+    { path: '/facebook-downloader', label: 'Facebook Downloader', icon: Download },
+    { path: '/tiktok-downloader', label: 'TikTok Downloader', icon: Download },
   ]
 
   const closeMenu = () => setIsOpen(false)
@@ -93,7 +97,16 @@ export const Navigation = () => {
         <Link to="/faq" className={`nav-link ${location.pathname === '/faq' ? 'active' : ''}`}>
           FAQ
         </Link>
+        <Link to="/blog" className={`nav-link ${location.pathname === '/blog' ? 'active' : ''}`}>
+          Blog
+        </Link>
         <div className="nav-divider" />
+        <Link to="/youtube-downloader" className={`nav-link ${location.pathname === '/youtube-downloader' ? 'active' : ''}`}>
+          YouTube
+        </Link>
+        <Link to="/instagram-downloader" className={`nav-link ${location.pathname === '/instagram-downloader' ? 'active' : ''}`}>
+          Instagram
+        </Link>
         <Link to="/privacy" className={`nav-link ${location.pathname === '/privacy' ? 'active' : ''}`}>
           Privacy
         </Link>

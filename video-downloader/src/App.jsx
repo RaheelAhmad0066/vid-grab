@@ -22,6 +22,10 @@ import { PlatformBadges } from './components/PlatformBadges'
 import { SettingsPanel } from './components/SettingsPanel'
 import { VideoPreviewModal } from './components/VideoPreviewModal'
 import { Navigation } from './components/Navigation'
+import { HomeContent } from './components/HomeContent'
+import { DownloaderTool } from './components/DownloaderTool'
+import { MetaTags } from './components/MetaTags'
+import { CookieConsent } from './components/CookieConsent'
 
 // Pages
 import { PrivacyPolicy } from './pages/PrivacyPolicy'
@@ -32,6 +36,10 @@ import { About } from './pages/About'
 import { FAQ } from './pages/FAQ'
 import { Blog } from './pages/Blog'
 import { BlogPost } from './pages/BlogPost'
+import { YouTubeDownloader } from './pages/YouTubeDownloader'
+import { InstagramDownloader } from './pages/InstagramDownloader'
+import { FacebookDownloader } from './pages/FacebookDownloader'
+import { TikTokDownloader } from './pages/TikTokDownloader'
 
 // Utils
 import { detectPlatform } from './utils/platform'
@@ -142,20 +150,13 @@ export default function App() {
       <div className="bg-blob blob-1" />
       <div className="bg-blob blob-2" />
       <div className="bg-blob blob-3" />
-
+      <MetaTags />
+      <CookieConsent />
       <TopBar />
       <Navigation />
 
       <SettingsPanel onSaveFile={saveFile} />
       
-      <VideoPreviewModal
-        isOpen={showPreview}
-        onClose={() => setShowPreview(false)}
-        videoInfo={videoInfo}
-        url={url}
-        platform={platform}
-      />
-
       <Routes>
         <Route path="/" element={
           <div className="container">
@@ -191,261 +192,8 @@ export default function App() {
           </motion.p>
         </motion.header>
 
-        {/* Platform Badges */}
-        <PlatformBadges detectedPlatform={detectedPlatform} />
-
-        {/* Main Card */}
-        <motion.div 
-          className="card"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-        >
-          {/* URL Input */}
-          <div className="input-section">
-            <div className={`input-wrapper ${detectedPlatform ? 'has-platform' : ''} ${status === DOWNLOAD_STATUS.ERROR ? 'has-error' : ''}`}>
-              {detectedPlatform && (
-                <span className="input-platform-badge" style={{ background: detectedPlatform.color }}>
-                  {typeof detectedPlatform.icon === 'string' ? (
-                    <img src={detectedPlatform.icon} alt={detectedPlatform.name} style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
-                  ) : (
-                    detectedPlatform.icon
-                  )} {detectedPlatform.name}
-                </span>
-              )}
-              <input
-                type="url"
-                className="url-input"
-                placeholder="Paste video URL here… (YouTube, Facebook, Instagram, TikTok…)"
-                value={url}
-                onChange={e => { setUrl(e.target.value); }}
-                onKeyDown={e => e.key === 'Enter' && analyzeVideo()}
-                disabled={status === DOWNLOAD_STATUS.ANALYZING || status === DOWNLOAD_STATUS.DOWNLOADING}
-                aria-label="Video URL"
-              />
-              <button
-                className={`paste-btn ${pasteHint ? 'pasted' : ''}`}
-                onClick={() => pasteFromClipboard(setUrl)}
-                title="Paste from clipboard"
-              >
-                {pasteHint ? <CheckCheck size={18} /> : <Clipboard size={18} />}
-              </button>
-              {url && (
-                <>
-                  <button className="clear-btn" onClick={() => copyToClipboard(url)} title="Copy link">
-                    <Copy size={18} />
-                  </button>
-                  <button className="clear-btn" onClick={resetDownload} title="Clear">
-                    <X size={18} />
-                  </button>
-                </>
-              )}
-            </div>
-            <AnimatePresence mode="wait">
-              {status === DOWNLOAD_STATUS.ERROR && (
-                <motion.div 
-                  className="error-msg" 
-                  role="alert"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <AlertCircle size={18} /> {errorMsg}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Analyze Button */}
-          <AnimatePresence mode="wait">
-            {(status === DOWNLOAD_STATUS.IDLE || status === DOWNLOAD_STATUS.ERROR) && (
-              <motion.button
-                className="analyze-btn"
-                onClick={analyzeVideo}
-                disabled={!url.trim()}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.2 }}
-              >
-                <span className="btn-icon"><Search size={20} /></span>
-                Analyze Video
-              </motion.button>
-            )}
-          </AnimatePresence>
-
-          {/* Analyzing State */}
-          <AnimatePresence mode="wait">
-            {status === DOWNLOAD_STATUS.ANALYZING && (
-              <motion.div 
-                className="analyzing-state"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Loader2 className="spinner" size={32} />
-                <span>Fetching video info…</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Video Info */}
-          <AnimatePresence mode="wait">
-            {(status === DOWNLOAD_STATUS.READY || status === DOWNLOAD_STATUS.DONE) && videoInfo && (
-              <motion.div 
-                className={`video-info ${status === DOWNLOAD_STATUS.DONE ? 'done' : ''}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-              >
-                <div className="video-thumb-wrap">
-                  {videoInfo.thumbnail ? (
-                    <>
-                      <img 
-                        src={videoInfo.thumbnail} 
-                        alt="thumbnail" 
-                        className="video-thumb"
-                        loading="lazy"
-                        onError={(e) => {
-                          console.error('Thumbnail failed to load:', videoInfo.thumbnail)
-                          e.target.style.display = 'none'
-                          const placeholder = e.target.parentElement.querySelector('.thumb-placeholder')
-                          if (placeholder) placeholder.style.display = 'flex'
-                        }}
-                      />
-                      <div className="thumb-placeholder" style={{ display: 'none' }}>
-                        <Film size={48} />
-                      </div>
-                      {/* Preview Overlay */}
-                      <motion.div 
-                        className="thumb-preview-overlay"
-                        onClick={() => setShowPreview(true)}
-                        whileHover={{ opacity: 1 }}
-                        initial={{ opacity: 0 }}
-                      >
-                        <motion.div
-                          className="thumb-play-btn"
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <Play size={32} fill="white" />
-                        </motion.div>
-                        <span className="preview-text">Preview</span>
-                      </motion.div>
-                    </>
-                  ) : (
-                    <div className="thumb-placeholder">
-                      <Film size={48} />
-                    </div>
-                  )}
-                  <span className="video-duration">{videoInfo.duration}</span>
-                  {platform && (
-                    <span className="video-platform-tag" style={{ background: platform.color }}>
-                      {typeof platform.icon === 'string' ? (
-                        <img src={platform.icon} alt={platform.name} style={{ width: '14px', height: '14px', objectFit: 'contain' }} />
-                      ) : (
-                        platform.icon
-                      )} {platform.name}
-                    </span>
-                  )}
-                </div>
-
-                <div className="video-meta">
-                  <h3 className="video-title">{videoInfo.title}</h3>
-                  {videoInfo.uploader && (
-                    <p className="video-uploader"><User size={16} /> {videoInfo.uploader}</p>
-                  )}
-                  
-                  {status === DOWNLOAD_STATUS.READY && (
-                    <motion.button
-                      className="share-btn"
-                      onClick={handleShare}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Share2 size={16} /> Share
-                    </motion.button>
-                  )}
-
-                  {status === DOWNLOAD_STATUS.READY && (
-                    <div className="format-select-wrap">
-                      <label className="quality-label">Select Quality:</label>
-                      <div className="quality-options">
-                        {videoInfo.formats?.map(fmt => (
-                          <motion.button
-                            key={fmt.format_id}
-                            className={`quality-btn ${selectedFormat?.format_id === fmt.format_id ? 'selected' : ''}`}
-                            onClick={() => setSelectedFormat(fmt)}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            {fmt.label}
-                            {fmt.filesize && <span className="fmt-size"> · {fmt.filesize}</span>}
-                          </motion.button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {status === DOWNLOAD_STATUS.DONE ? (
-                    <div className="done-state">
-                      <span className="done-icon"><CheckCheck size={24} /></span>
-                      <span>Ready to save!</span>
-                      <button className="download-btn save-btn" onClick={() => saveFile(useAppStore.getState().jobId)}>
-                        <Save size={20} /> Save File
-                      </button>
-                      <button className="reset-btn" onClick={resetDownload}>
-                        Download another
-                      </button>
-                    </div>
-                  ) : (
-                    <motion.button
-                      className="download-btn"
-                      onClick={downloadVideo}
-                      disabled={!selectedFormat}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <span className="btn-icon"><Download size={20} /></span> Download Now
-                    </motion.button>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Progress Bar */}
-          <AnimatePresence mode="wait">
-            {status === DOWNLOAD_STATUS.DOWNLOADING && (
-              <motion.div 
-                className="download-progress"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="progress-info">
-                  <span>
-                    Downloading…
-                    {speed && <span className="speed-tag">{speed}</span>}
-                  </span>
-                  <span className="progress-pct">
-                    {progress}% {eta && `· ETA ${eta}`}
-                  </span>
-                </div>
-                <div className="progress-bar-track">
-                  <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
-                </div>
-                <p className="progress-sub">{videoInfo?.title}</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+        {/* Main Card / Downloader Tool */}
+        <DownloaderTool />
 
         {/* How It Works */}
         <motion.div
@@ -521,6 +269,9 @@ export default function App() {
           </div>
         </motion.div>
 
+        {/* Rich Content for AdSense */}
+        <HomeContent />
+
         {/* History */}
         <AnimatePresence>
           {history.length > 0 && (
@@ -592,6 +343,15 @@ export default function App() {
               and platform terms of service. We do not host any content on our servers.
             </p>
             <div className="footer-links">
+              <a href="/youtube-downloader">YouTube Downloader</a>
+              <span>·</span>
+              <a href="/instagram-downloader">Instagram Downloader</a>
+              <span>·</span>
+              <a href="/facebook-downloader">Facebook Downloader</a>
+              <span>·</span>
+              <a href="/tiktok-downloader">TikTok Downloader</a>
+            </div>
+            <div className="footer-links" style={{ marginTop: '8px' }}>
               <a href="/privacy">Privacy Policy</a>
               <span>·</span>
               <a href="/terms">Terms of Service</a>
@@ -615,6 +375,10 @@ export default function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/youtube-downloader" element={<YouTubeDownloader />} />
+        <Route path="/instagram-downloader" element={<InstagramDownloader />} />
+        <Route path="/facebook-downloader" element={<FacebookDownloader />} />
+        <Route path="/tiktok-downloader" element={<TikTokDownloader />} />
       </Routes>
     </div>
   )
