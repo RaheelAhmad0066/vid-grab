@@ -9,6 +9,7 @@ export const SettingsPanel = ({ onSaveFile }) => {
   const {
     showSettings, toggleSettings, clearHistory, history, removeFromHistory,
     autoDownload, toggleAutoDownload,
+    cookies, setCookies,
     batchQueue, addToBatch, removeFromBatch, clearBatch,
   } = useAppStore()
 
@@ -75,6 +76,22 @@ export const SettingsPanel = ({ onSaveFile }) => {
                   >
                     <span className="toggle-knob" />
                   </button>
+                </div>
+              </div>
+
+              {/* Cookies */}
+              <div className="settings-section">
+                <h3><Info size={20} /> Cookies</h3>
+                <div className="setting-item">
+                  <p className="setting-label">Netscape-format cookies (optional)</p>
+                  <p className="setting-description">Paste cookies here to bypass bot detection on platforms like YouTube, Instagram, etc. Export from browser developer tools.</p>
+                  <textarea
+                    className="cookies-textarea"
+                    placeholder="# Netscape HTTP Cookie File&#10;youtube.com&#9;TRUE&#9;/&#9;FALSE&#9;0&#9;VISITOR_INFO1_LIVE&#9;value&#10;..."
+                    value={cookies}
+                    onChange={e => setCookies(e.target.value)}
+                    rows={6}
+                  />
                 </div>
               </div>
 

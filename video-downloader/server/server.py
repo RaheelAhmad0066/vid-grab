@@ -20,6 +20,10 @@ ALLOWED_ORIGINS = os.environ.get('ALLOWED_ORIGINS', '*').split(',')
 # Set INSTAGRAM_COOKIES=/path/to/cookies.txt in your environment
 INSTAGRAM_COOKIES_FILE = os.environ.get('INSTAGRAM_COOKIES', '').strip() or None
 
+# Optional: path to a Netscape-format cookies file for YouTube auth
+# Set YOUTUBE_COOKIES=/path/to/youtube_cookies.txt in your environment
+YOUTUBE_COOKIES_FILE = os.environ.get('YOUTUBE_COOKIES', '').strip() or None
+
 os.environ['SSL_CERT_FILE']       = certifi.where()
 os.environ['REQUESTS_CA_BUNDLE']  = certifi.where()
 ssl_ctx = ssl.create_default_context(cafile=certifi.where())
@@ -411,6 +415,7 @@ def direct_download(job_id, video_url, title, ext, request_headers):
 def get_info():
     data = request.get_json()
     url  = data.get('url', '').strip()
+    cookies = data.get('cookies', '').strip()  # Optional cookies string
     if not url:
         return jsonify({'error': 'URL is required'}), 400
 
@@ -449,22 +454,81 @@ def get_info():
         except Exception as e:
             return jsonify({'error': str(e)}), 400
 
+    # ── YouTube ───────────────────────────────────────────────────────────────
+    if 'youtube.com' in url or 'youtu.be' in url:
+        base_opts = {
+            'quiet': True, 'no_warnings': True, 'skip_download': True,
+            'noplaylist': True, 'nocheckcertificate': False,
+            'socket_timeout': 30, 'retries': 3,
+            'fragment_retries': 3, 'extractor_retries': 3,
+            'file_access_retries': 3, 'http_chunk_size': 16384,
+        }
+        
+        strategies = [{}]  # Try without cookies first
+        
+        # Add cookies from request if provided
+        if cookies:
+            # Write cookies to a temporary file
+            cookie_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
+            cookie_file.write(cookies)
+            cookie_file.close()
+            strategies.append({'cookiesfile': cookie_file.name})
+        
+        # Add cookies from environment file
+        if YOUTUBE_COOKIES_FILE and os.path.exists(YOUTUBE_COOKIES_FILE):
+            strategies.append({'cookiesfile': YOUTUBE_COOKIES_FILE})
+        
+        # Add browser cookies
+        for browser in ('chrome', 'firefox', 'chromium', 'brave', 'edge', 'safari'):
+            strategies.append({'cookiesfrombrowser': (browser, None, None, None)})
+        
+        last_err = None
+        for extra in strategies:
+            try:
+                opts = {**base_opts, **extra}
+                with yt_dlp.YoutubeDL(opts) as ydl:
+                    info = ydl.extract_info(url, download=False)
+                return jsonify(_ydl_to_response(info))
+            except Exception as e:
+                last_err = e
+                continue
+        
+        return jsonify({'error': str(last_err).replace('ERROR: ', '')}), 400
+
     # ── All other platforms (yt-dlp) ──────────────────────────────────────────
-    ydl_opts = {
+    base_opts = {
         'quiet': True, 'no_warnings': True, 'skip_download': True,
         'noplaylist': True, 'nocheckcertificate': False,
         'socket_timeout': 30, 'retries': 3,
         'fragment_retries': 3, 'extractor_retries': 3,
         'file_access_retries': 3, 'http_chunk_size': 16384,
     }
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
-        return jsonify(_ydl_to_response(info))
-    except yt_dlp.utils.DownloadError as e:
-        return jsonify({'error': str(e).replace('ERROR: ', '')}), 400
-    except Exception as e:
-        return jsonify({'error': f'Failed to fetch video info: {e}'}), 500
+    
+    strategies = [{}]  # Try without cookies first
+    
+    # Add cookies from request if provided
+    if cookies:
+        cookie_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
+        cookie_file.write(cookies)
+        cookie_file.close()
+        strategies.append({'cookiesfile': cookie_file.name})
+    
+    # Add browser cookies
+    for browser in ('chrome', 'firefox', 'chromium', 'brave', 'edge', 'safari'):
+        strategies.append({'cookiesfrombrowser': (browser, None, None, None)})
+    
+    last_err = None
+    for extra in strategies:
+        try:
+            opts = {**base_opts, **extra}
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+            return jsonify(_ydl_to_response(info))
+        except Exception as e:
+            last_err = e
+            continue
+    
+    return jsonify({'error': str(last_err).replace('ERROR: ', '')}), 400
 
 
 @app.route('/api/download', methods=['POST'])
@@ -473,6 +537,7 @@ def start_download():
     url       = data.get('url', '').strip()
     format_id = data.get('format_id', 'bestvideo+bestaudio/best')
     is_audio  = data.get('is_audio', False)
+    cookies   = data.get('cookies', '').strip()  # Optional cookies string
 
     if not url:
         return jsonify({'error': 'URL is required'}), 400
@@ -596,38 +661,109 @@ def start_download():
         threading.Thread(target=run_instagram, daemon=True).start()
         return jsonify({'job_id': job_id})
 
+    # ── YouTube ───────────────────────────────────────────────────────────────
+    if 'youtube.com' in url or 'youtu.be' in url:
+        def run_youtube():
+            output_path = os.path.join(DOWNLOAD_DIR, f'{job_id}.%(ext)s')
+            base_opts = {
+                'outtmpl': output_path, 'quiet': True, 'no_warnings': True,
+                'noplaylist': True, 'merge_output_format': 'mp4',
+                'progress_hooks': [progress_hook(job_id)],
+            }
+            if is_audio:
+                base_opts['format'] = 'bestaudio/best'
+                base_opts['postprocessors'] = [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '192'}]
+            else:
+                base_opts['format'] = format_id
+            
+            strategies = [{}]  # Try without cookies first
+            
+            # Add cookies from request if provided
+            if cookies:
+                cookie_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
+                cookie_file.write(cookies)
+                cookie_file.close()
+                strategies.append({'cookiesfile': cookie_file.name})
+            
+            # Add cookies from environment file
+            if YOUTUBE_COOKIES_FILE and os.path.exists(YOUTUBE_COOKIES_FILE):
+                strategies.append({'cookiesfile': YOUTUBE_COOKIES_FILE})
+            
+            # Add browser cookies
+            for browser in ('chrome', 'firefox', 'chromium', 'brave', 'edge', 'safari'):
+                strategies.append({'cookiesfrombrowser': (browser, None, None, None)})
+            
+            for extra in strategies:
+                try:
+                    opts = {**base_opts, **extra}
+                    with yt_dlp.YoutubeDL(opts) as ydl:
+                        info = ydl.extract_info(url, download=True)
+                    ext      = 'mp3' if is_audio else 'mp4'
+                    filepath = os.path.join(DOWNLOAD_DIR, f'{job_id}.{ext}')
+                    if not os.path.exists(filepath):
+                        for f in os.listdir(DOWNLOAD_DIR):
+                            if f.startswith(job_id):
+                                filepath = os.path.join(DOWNLOAD_DIR, f); break
+                    progress_store[job_id] = {
+                        'status': 'finished', 'percent': 100, 'filepath': filepath,
+                        'title': info.get('title', 'YouTube Video'), 'ext': ext,
+                    }
+                    return
+                except Exception:
+                    continue
+            
+            progress_store[job_id] = {'status': 'error', 'percent': 0, 'error': 'All cookie strategies failed'}
+
+        threading.Thread(target=run_youtube, daemon=True).start()
+        return jsonify({'job_id': job_id})
+
     # ── All other platforms ───────────────────────────────────────────────────
     def run_download():
         output_path = os.path.join(DOWNLOAD_DIR, f'{job_id}.%(ext)s')
+        base_opts = {
+            'outtmpl': output_path, 'quiet': True, 'no_warnings': True,
+            'noplaylist': True, 'merge_output_format': 'mp4',
+            'progress_hooks': [progress_hook(job_id)],
+        }
         if is_audio:
-            ydl_opts = {
-                'format': 'bestaudio/best', 'outtmpl': output_path,
-                'quiet': True, 'no_warnings': True, 'noplaylist': True,
-                'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '192'}],
-                'progress_hooks': [progress_hook(job_id)],
-            }
+            base_opts['format'] = 'bestaudio/best'
+            base_opts['postprocessors'] = [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '192'}]
         else:
-            ydl_opts = {
-                'format': format_id, 'outtmpl': output_path,
-                'quiet': True, 'no_warnings': True, 'noplaylist': True,
-                'merge_output_format': 'mp4',
-                'progress_hooks': [progress_hook(job_id)],
-            }
-        try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(url, download=True)
-            ext      = 'mp3' if is_audio else 'mp4'
-            filepath = os.path.join(DOWNLOAD_DIR, f'{job_id}.{ext}')
-            if not os.path.exists(filepath):
-                for f in os.listdir(DOWNLOAD_DIR):
-                    if f.startswith(job_id):
-                        filepath = os.path.join(DOWNLOAD_DIR, f); break
-            progress_store[job_id] = {
-                'status': 'finished', 'percent': 100, 'filepath': filepath,
-                'title': info.get('title', 'video'), 'ext': ext,
-            }
-        except Exception as e:
-            progress_store[job_id] = {'status': 'error', 'percent': 0, 'error': str(e)}
+            base_opts['format'] = format_id
+        
+        strategies = [{}]  # Try without cookies first
+        
+        # Add cookies from request if provided
+        if cookies:
+            cookie_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
+            cookie_file.write(cookies)
+            cookie_file.close()
+            strategies.append({'cookiesfile': cookie_file.name})
+        
+        # Add browser cookies
+        for browser in ('chrome', 'firefox', 'chromium', 'brave', 'edge', 'safari'):
+            strategies.append({'cookiesfrombrowser': (browser, None, None, None)})
+        
+        for extra in strategies:
+            try:
+                opts = {**base_opts, **extra}
+                with yt_dlp.YoutubeDL(opts) as ydl:
+                    info = ydl.extract_info(url, download=True)
+                ext      = 'mp3' if is_audio else 'mp4'
+                filepath = os.path.join(DOWNLOAD_DIR, f'{job_id}.{ext}')
+                if not os.path.exists(filepath):
+                    for f in os.listdir(DOWNLOAD_DIR):
+                        if f.startswith(job_id):
+                            filepath = os.path.join(DOWNLOAD_DIR, f); break
+                progress_store[job_id] = {
+                    'status': 'finished', 'percent': 100, 'filepath': filepath,
+                    'title': info.get('title', 'video'), 'ext': ext,
+                }
+                return
+            except Exception:
+                continue
+        
+        progress_store[job_id] = {'status': 'error', 'percent': 0, 'error': 'All cookie strategies failed'}
 
     threading.Thread(target=run_download, daemon=True).start()
     return jsonify({'job_id': job_id})

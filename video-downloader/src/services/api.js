@@ -1,11 +1,11 @@
 import { API_BASE_URL } from '../constants/platforms'
 
 class ApiService {
-  async fetchVideoInfo(url) {
+  async fetchVideoInfo(url, cookies = '') {
     const response = await fetch(`${API_BASE_URL}/info`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url, cookies }),
     })
     
     const data = await response.json()
@@ -17,7 +17,7 @@ class ApiService {
     return data
   }
 
-  async startDownload(url, formatId, isAudio) {
+  async startDownload(url, formatId, isAudio, cookies = '') {
     const response = await fetch(`${API_BASE_URL}/download`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -25,6 +25,7 @@ class ApiService {
         url,
         format_id: formatId,
         is_audio: isAudio,
+        cookies,
       }),
     })
     

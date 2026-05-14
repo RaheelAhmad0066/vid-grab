@@ -20,6 +20,7 @@ export const useAppStore = create((set, get) => ({
 
   // Settings
   autoDownload: false,
+  cookies: '',
 
   // Batch Queue
   batchQueue: [],
@@ -98,6 +99,8 @@ export const useAppStore = create((set, get) => ({
     }
     const auto = localStorage.getItem('vidrivo-auto-download')
     if (auto !== null) set({ autoDownload: auto === 'true' })
+    const cookies = localStorage.getItem('vidrivo-cookies')
+    if (cookies) set({ cookies })
   },
   
   loadTheme: () => {
@@ -105,6 +108,16 @@ export const useAppStore = create((set, get) => ({
     if (saved) {
       set({ darkMode: saved === 'dark' })
     }
+  },
+
+  setCookies: (cookies) => {
+    set({ cookies })
+    localStorage.setItem('vidrivo-cookies', cookies)
+  },
+
+  loadCookies: () => {
+    const saved = localStorage.getItem('vidrivo-cookies')
+    if (saved) set({ cookies: saved })
   },
   
   reset: () => set({

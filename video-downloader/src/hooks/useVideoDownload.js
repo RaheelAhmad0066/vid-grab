@@ -14,6 +14,7 @@ export const useVideoDownload = () => {
     selectedFormat,
     videoInfo,
     platform,
+    cookies,
     setStatus,
     setPlatform,
     setVideoInfo,
@@ -43,7 +44,7 @@ export const useVideoDownload = () => {
     toast.loading('Analyzing video...', { id: 'analyze' })
 
     try {
-      const data = await apiService.fetchVideoInfo(trimmed)
+      const data = await apiService.fetchVideoInfo(trimmed, cookies)
       setVideoInfo(data)
       setStatus(DOWNLOAD_STATUS.READY)
       toast.success('Video info loaded!', { id: 'analyze' })
@@ -64,7 +65,8 @@ export const useVideoDownload = () => {
       const data = await apiService.startDownload(
         url.trim(),
         selectedFormat.format_id,
-        isAudio
+        isAudio,
+        cookies
       )
 
       const jobId = data.job_id
