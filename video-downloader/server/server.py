@@ -35,6 +35,22 @@ if ALLOWED_ORIGINS == ['*']:
 else:
     CORS(app, origins=ALLOWED_ORIGINS)
 
+@app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
+@app.route('/<path:path>', methods=['OPTIONS'])
+def handle_options(path):
+    headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-requested-with'
+    }
+    return '', 204, headers
+
+@app.after_request
+def add_cors_headers(response):
+    if 'Access-Control-Allow-Origin' not in response.headers:
+        response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
+
 progress_store = {}
 DOWNLOAD_DIR   = tempfile.mkdtemp()
 
